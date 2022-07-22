@@ -1,0 +1,668 @@
+﻿{% extends 'nwp/form_manage_manual.html' %}
+
+{% block title %}{{ g.page  }}{% endblock %}
+
+{% block style %} 
+{{- super() -}}
+{# insert below css for the page -#}
+
+{% endblock %}
+
+{% block script %} 
+{{- super() -}}
+{# insert below js for the page -#}
+<script>
+var c_id = 0;
+var line_counter = 0;
+var natija = "haijulikani";
+
+
+$(document).ready(function() {
+
+    var sbutton = document.getElementById('save_button');
+    var dbutton = document.getElementById('update_button');
+    var row_selected = false;
+    var key_changed = false;
+    clear_form();
+    populate_hour();
+    populate_location($("#sector").val());
+    $("#frmmode").html("Entry");
+    $("#frminfo").html("");
+
+    var d = new Date();
+    let date_str = d.getDate() + "-" + (d.getMonth()+1) + "-" + d.getFullYear();
+
+    $("#reading_date").val(date_str);
+
+    $("#unit").blur(function () {
+        let c_id_val = document.getElementById("unit").value;
+        if ((c_id!=0) && (c_id_val != c_id)) {
+            lines = get_lines();
+            if (lines > 1) {
+                let l = lines - 1
+                alert("You have not uploaded " + l + " lines entered. Changing unit is NOT allowed!!!")
+            } else {
+                clear_form();
+                clear_readings();
+                c_id = c_id_val
+            }
+        }
+        clear_form();
+    });
+
+    $("input.reading").change(function(){
+        $("#save_button").prop("disabled", false);
+        $("#del_button").prop("disabled", true);
+        $("#frmmode").html("Entry");
+
+    });
+
+
+    $("#reading_date").blur(function(){
+        let result = valid_date(document.getElementById("reading_date").value);
+        if (result.split(":")[0] == "ok") {
+            document.getElementById("reading_date").value = result.split(":")[1];
+
+        }
+    });
+
+
+    $("#reading_hour").change(function(){
+        $("#save_button").prop("disabled", false);
+        $("#del_button").prop("disabled", true);
+        $("#frmmode").html("Entry");
+    });
+
+    $("#sector").change(function () {
+        populate_location($("#sector").val());
+        $("#save_button").prop("disabled", false);
+        $("#del_button").prop("disabled", true);
+        $("#frmmode").html("Entry");
+    });
+
+    $("#location").change(function(){
+        $("#save_button").prop("disabled", false);
+        $("#del_button").prop("disabled", true);
+        $("#frmmode").html("Entry");
+    });
+
+
+    $("#save_button").click(function (event) {
+        //add row to table from form data
+        event.preventDefault();
+        let entered_data = data_list();
+        let errors = validate_data(entered_data);
+        let err_msg = "";
+        if (errors.length > 0) {
+            //display errors, no saving
+            $.each(errors, function(colIndex, c) {
+                err_msg += c;
+                err_msg +="\n";
+            })
+            alert(err_msg);
+        }
+        else {
+            $("#save_button").prop("disabled", true);
+            c_id = $("#unit").val();
+            append_row(entered_data);
+            $("#frminfo").html("Lines entered : " + (get_lines()-1));
+        }
+        $("#location").focus();
+
+    });
+
+    $("#update_button").click(function (event) {
+        //upload readings
+
+        event.preventDefault();
+        let sure = confirm("Readings will be uploaded and input form cleared.\n Are you sure?");
+        if (sure) {
+            $("#frmmode").html("Update");
+            let ctr = 0;
+            while (true) {
+                upload_data();
+                ctr++;
+                var lines = get_lines();
+                if (lines < 2 || ctr > 40) {
+//                    alert("Uploaded " +  ctr + " lines");
+                    break;
+                }
+            }
+            $("#frminfo").html("Uploaded " + ctr);
+            lines = get_lines();
+            if (lines < 2) {
+                {#clear_readings();#}
+                c_id = 0;
+//                alert("Uploaded successfully");
+            }
+            else {
+                lns = lines - 1;
+//                alert("Upload failed on " + lns + "lines. Please correct and upload again")
+            }
+            $("#unit").focus();
+        }
+
+    });
+
+    $("#del_button").click(function (event) {
+        //remove selected reading from table
+
+        event.preventDefault();
+        let sure = confirm("Readings line will be removed from table");
+        if (sure) {
+            remove_line($("#line").val());
+            $("#save_button").prop("disabled", false);
+            $("#del_button").prop("disabled", true);
+            $("#frmmode").html("Entry");
+            $("#frminfo").html("Line " + $("#line").val() + " removed");
+            $("#location").focus();
+        }
+
+    })
+
+
+    $("#clear_button").click(function (event) {
+        //clear readings table
+
+        event.preventDefault();
+        let sure = confirm("Entered Readings will be cleared from form table. Uploaded readings not affected.\n Are you sure?");
+        if (sure) {
+            $("#frmmode").html("Clear");
+            clear_readings();
+            c_id = 0;
+            $("#frminfo").html("All Line removed");
+            $("#location").focus();
+
+        }
+
+    })
+
+      $("#treadings").delegate("tr", "click", function(){
+
+        output = [];
+        clearbgc();
+        $(this).css("backgroundColor", "yellow");
+        $(this).find('td').each(function (colIndex, c) {
+            output.push(c.textContent);
+        })
+        populate_form(output);
+        $("#del_button").prop("disabled", false);
+        $("#save_button").prop("disabled", true);
+        $("#frmmode").html("Selected");
+        $("#frminfo").html("Line #" + output[1] + " selected");
+        $("#location").focus();
+
+      })
+
+
+});
+
+function getTableData(table) {
+    var data = [];
+    table.find('tr').each(function (rowIndex, r) {
+        var cols = [];
+        $(this).find('td').each(function (colIndex, c) {
+            cols.push(c.textContent);
+        });
+        data.push(cols);
+    });
+    return data;
+}
+
+function get_sector(loc) {
+    //api SectorOfLocation returns sector of supplied location arg
+    out_sector = "1";
+    $.getJSON("api/helpers/SectorOfLocation?location=" + loc, function(result){
+        $.each(result, function(i, field) {
+            out_sector = field.sector;
+        })
+    })
+    return out_sector
+}
+
+function populate_location(sector){
+  $('#location' ).empty();
+  $.getJSON("api/helpers/locations?sector="+ sector , function(result) {
+    $.each(result, function(i,field){
+        $('#location' ).append('<option value = "' + field.id + '">' + '('+field.id +')'+ '-' + field.desc + '</option>');
+    });
+  });
+}
+
+function populate_hour(){
+    $('#reading_hour' ).empty();
+    var h;
+    for (h=0; h<24; h++) {
+        t1 = h < 12? "am" : "pm";
+        h2 = h+1;
+        t2 = h2 < 12? "am" : "pm";
+        let t = h + ":00" + t1 + " to " + h2 + ":00" + t2;
+        $('#reading_hour' ).append('<option value = "' + h + '">' + t + '</option>');
+    }
+}
+
+
+
+function get_lines() {
+    let ctr = 0
+    $("#treadings").find("tr").each(function(rowIndex, r){
+        ctr += 1;
+    })
+    return ctr;
+}
+
+
+function clear_form() {
+
+    document.getElementById('temp_surface').value = "";
+    document.getElementById('temp_bottom').value = "";
+    document.getElementById('DO_surface_mg').value = "";
+    document.getElementById('DO_bottom_mg').value = "";
+    document.getElementById('DO_surface_saturation').value = "";
+    document.getElementById('DO_bottom_saturation').value = "";
+    document.getElementById('salinity').value = "";
+}
+
+function validate_data(reading_data) {
+    let const_error = "error";
+    let const_ok = "ok";
+    let errors = [];
+//date
+    let result = valid_date(reading_data[2]);
+    if (result.split(":")[0] == const_error) {
+        errors.push(result.split(":")[1]);
+    }
+    else {
+        let rfmt_date = result.split(":")[1];
+
+        let d = new Date(rfmt_date.split("-")[2], Number(rfmt_date.split("-")[1])-1, rfmt_date.split("-")[0]);
+     if (valid_date_range(d) == const_error) {
+            errors.push("date note allowed");
+        }
+    }
+
+    for (let i = 5; i<12; i++){
+        if (isNaN(reading_data[i])) {
+            errors.push("some of the data is not numeric");
+            break;
+        }
+    }
+
+    return errors;
+}
+
+function valid_date(in_date) {
+    //function returns error message as 'error:msg' if erroneous date supplied, or
+    //message 'ok:dd-mm-yyyy' if date is ok
+    // arg :  string in_date
+    let err_msg = "error: not valid date";
+    let lst_str = in_date.split("/");
+    if (lst_str.length != 3) {
+        lst_str = in_date.split("-");
+    }
+
+    if (lst_str.length != 3) {
+        lst_str = in_date.split(".");
+    }
+
+    if (lst_str.length != 3) {
+        return err_msg + ", components";
+    }
+
+    if (isNaN(lst_str[0]) || isNaN(lst_str[1]) || isNaN(lst_str[2])) {
+        return err_msg + ", not numeric";
+    }
+
+    if (lst_str[0] > 31 || lst_str[1] > 12 || lst_str[2] < 2019) {
+        return err_msg + ", values";
+    }
+
+    let in_d = new Date(lst_str[2], lst_str[1], lst_str[0]);
+    // check if day is compatible with month (eg not 30/feb)
+
+    if (in_d.getMonth() != Number(lst_str[1])) {
+        return err_msg + ", incompatible";
+    }
+
+    return "ok:" + in_d.getDate() + "-" + in_d.getMonth() + "-" + in_d.getFullYear()
+}
+
+function valid_date_range(in_date) {
+//if in_date is within date range, ok, else error
+//arg date in_date
+
+    let d_max = new Date();
+    let d_min = new Date();
+    d_min.setDate(d_min.getDate()-3);
+    if (in_date > d_max || in_date < d_min) {
+        return "error";
+    }
+    return "ok";
+}
+
+function populate_form(reading_data) {
+
+    document.getElementById("line").value = reading_data[1];
+    document.getElementById("unit").value = reading_data[0];
+    document.getElementById("reading_date").value = reading_data[2];
+    document.getElementById('reading_hour').value = reading_data[3];
+//    document.getElementById('sector').value = get_sector(reading_data[4]);
+//    populate_location($("#sector").val());
+    document.getElementById('location').value = reading_data[4];
+    document.getElementById('temp_surface').value = reading_data[5];
+    document.getElementById('temp_bottom').value = reading_data[6];
+    document.getElementById('DO_surface_mg').value = reading_data[7];
+    document.getElementById('DO_bottom_mg').value = reading_data[8];
+    document.getElementById('DO_surface_saturation').value = reading_data[9];
+    document.getElementById('DO_bottom_saturation').value = reading_data[10];
+    document.getElementById('salinity').value = reading_data[11];
+//    $("#location").val(reading_data[4]);
+}
+
+
+function data_list() {
+    let output = [];
+    output.push(document.getElementById("unit").value);
+    line_counter++;
+    output.push(line_counter);
+    output.push(document.getElementById("reading_date").value);
+    output.push(document.getElementById('reading_hour').value);
+    output.push(document.getElementById('location').value);
+    if (document.getElementById('temp_surface').value == "") {
+        output.push("0");
+    }
+    else {
+        output.push(document.getElementById('temp_surface').value);
+    }
+    if (document.getElementById('temp_bottom').value == "") {
+        output.push("0");
+    }
+    else {
+        output.push(document.getElementById('temp_bottom').value);
+    }
+    if (document.getElementById('DO_surface_mg').value == "") {
+        output.push("0");
+    }
+    else {
+        output.push(document.getElementById('DO_surface_mg').value);
+    }
+    if (document.getElementById('DO_bottom_mg').value == "") {
+        output.push("0");
+    }
+    else {
+        output.push(document.getElementById('DO_bottom_mg').value);
+    }
+    if (document.getElementById('DO_surface_saturation').value == "") {
+        output.push("0");
+    }
+    else {
+        output.push(document.getElementById('DO_surface_saturation').value);
+    }
+    if (document.getElementById('DO_bottom_saturation').value == "") {
+        output.push("0");
+    }
+    else {
+        output.push(document.getElementById('DO_bottom_saturation').value);
+    }
+    if (document.getElementById('salinity').value == "") {
+        output.push("0");
+    }
+    else {
+        output.push(document.getElementById('salinity').value);
+    }
+    return output;
+}
+
+function append_row(data_list) {
+    var lastRow = $('<tr/>').appendTo($("#treadings").find('tbody:last'));
+    $.each(data_list, function(colIndex, c) {
+        lastRow.append($('<td/>').text(c));
+    })
+
+}
+
+function remove_line(line_no) {
+    let ctr = 0
+    var tlen = $("#treadings tr").length;
+    tabData = $("#treadings tr");
+    for (i = 0; i < tlen; i++) {
+        var rrow = $("#treadings tr").eq(i);
+        var rline = rrow.children('td').eq(1);
+        if ($(rline).html() == line_no) {
+            $(rrow).remove();
+            return
+        }
+    }
+}
+
+
+function clearbgc(){
+  $("#treadings tbody tr").each(function(){
+    $(this).css("backgroundColor",'');
+  })
+}
+
+function clear_readings(){
+  $('#treadings tbody').empty();
+    line_counter = 0;
+
+}
+
+function upload_data() {
+    var const_T1 = 24;
+    var const_T2 = 25;
+    var const_DO1 = 36;
+    var const_DO2 = 37;
+    var const_EC = 12;
+    var transmit_result = [];
+    var data_list = getTableData($("#treadings"));
+    var data_line = [];
+    var payload = {};
+    for (let i = 0; i < data_list.length; i++) {
+        data_line = data_list[i];
+//        alert("Uploading line " + data_line[1]);
+        var sensors = getSensorList(data_line[0]);
+        if (data_line.length == 12) {
+            payload["Controller"] = data_line[0];
+            payload["Location"] = data_line[4];
+            payload["Sensor"] = sensors["T1"];
+            payload["ReadingTime"] = getRTime(data_line[2], data_line[3]);
+            payload["value"] = [data_line[5]];
+            transmit_result.push(transmit(payload));
+
+            payload["Sensor"] = sensors["T2"];
+            payload["value"] = [data_line[6]];
+            transmit_result.push(transmit(payload));
+
+            payload["Sensor"] = sensors["DO1"];
+            payload["value"] = {"MG": data_line[7], "PS": data_line[9]};
+            transmit_result.push(transmit(payload));
+
+            payload["Sensor"] = sensors["DO2"];
+            payload["value"] = {"MG": data_line[8], "PS": data_line[10]};
+            transmit_result.push(transmit(payload));
+
+            payload["Sensor"] = sensors["EC"];
+            payload["value"] = {"S": data_line[11]};
+            let res = transmit(payload);
+            transmit_result.push(res);
+            let transmit_success = true;
+            for (i = 0; i<transmit_result.length; i++) {
+                if (transmit_result[i] == "error") {
+                    transmit_success = false;
+                }
+            }
+            if (transmit_success) {
+                remove_line(data_line[1]);
+            }
+
+        }
+    }
+    return transmit_result;
+}
+
+function getSensorList(controller) {
+
+    var sensors300 = {"T1": 1000, "T2": 1001, "DO1": 1005, "DO2": 1006, "EC": 1010};
+    var sensors301 = {"T1": 1002, "T2": 1003, "DO1": 1007, "DO2": 1008, "EC": 1011};
+
+    if (controller == '300') {
+        return sensors300;
+    }
+    if (controller == '301') {
+        return sensors301;
+    }
+    //controller not defined
+    return sensors300;
+
+}
+
+function getRTime(rdate, rhour){
+    var dt = rdate.split("-");
+    return dt[2] + "-" + dt[1] + "-" + dt[0] + " " + rhour + ":" + "00"
+}
+
+function transmit(payload) {
+    var result = "";
+    var transmit_data = $.ajax({
+        url: 'api/sensor_reading',
+        type: 'POST',
+        dataType: 'json',
+        contentType: 'application/json',
+        data: JSON.stringify(payload),
+        success: function(resultData){
+            console.log("transmit ok");
+        }
+
+    });
+    transmit_data.error(function(){
+        throw("Transmit Fialed")
+        alert("Fail");
+    });
+    return "ok";
+}
+
+</script>
+{% endblock %}
+
+<!---
+  content blocks below
+--->
+
+{% block form %}
+<!--  <form  action = "" method = "post" novalidate="">  -->
+    {{ form.hidden_tag() }}
+    <div class = "row">
+        <div class = "col-sm-9">
+            <div class = 'form-group'>
+              {{ form.unit.label }}
+              {{ form.unit(class_ ='input-sm', style='width:50%; margin-top:10px') }}
+                <input class="input-sm" type="text" id="line" name="line" style='width:10%; margin-top:10px; visibility:hidden'>
+            </div>
+            <div class="row">
+                <div class = "col-sm-3 form-group">
+                  {{ form.reading_date.label }}
+                  {{ form.reading_date(class_ ='input-sm reading', style="width:80%") }}
+                </div>
+
+                <div class = "col-sm-4 offset-sm-1 form-group">
+                  {{ form.reading_hour.label }}
+                  {{ form.reading_hour(class_ ='input-sm reading') }}
+                </div>
+            </div>
+            <div class="row">
+                <div class = "col-sm-4 form-group">
+                  {{ form.sector.label }}
+                  {{ form.sector(class ='input-sm', style='width:80%') }}
+                </div>
+                <div class = "col-sm-4 form-group">
+                  {{ form.location.label }}
+                  {{ form.location(autofocus=true, class ='input-sm reading', style='width:80%') }}
+                </div>
+            </div>
+            <div class="row">
+                <div class = "col-sm-4 form-group">
+                  {{ form.temp_surface.label }}
+                  {{ form.temp_surface(class_ ='input-sm reading', style='width:80%;' ) }}
+                </div>
+                <div class = "col-sm-4 form-group">
+                  {{ form.temp_bottom.label }}
+                  {{ form.temp_bottom(class_ ='input-sm reading', style='width:80%;') }}
+                </div>
+            </div>
+        </div>
+        <div class = "col-sm-3">
+            <div class = "formstatus" >
+                <H1  id = "frmmode" style="background-color: #00bce1">Entry</H1><br>
+            </div>
+            <div class="formstatus" >
+                <H4  id="frminfo" style="color: #0059b3">More Info</H4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class = "col-sm-2 form-group">
+          {{ form.DO_surface_mg.label }}
+          {{ form.DO_surface_mg(class_ ='input-sm reading', style='width:80%;') }}
+        </div>
+        <div class = "col-sm-2 form-group">
+          {{ form.DO_bottom_mg.label }}
+          {{ form.DO_bottom_mg(class_ ='input-sm reading', style='width:80%;') }}
+        </div>
+        <div class = "col-sm-2 form-group">
+          {{ form.DO_surface_saturation.label }}
+          {{ form.DO_surface_saturation(class_ ='input-sm reading', style='width:80%;') }}
+        </div>
+        <div class = "col-sm-2 form-group">
+          {{ form.DO_bottom_saturation.label }}
+          {{ form.DO_bottom_saturation(class_ ='input-sm reading', style='width:80%;') }}
+        </div>
+    </div>
+    <div class="row">
+        <div class = "col-sm-3 form-group">
+          {{ form.salinity.label }}
+          {{ form.salinity(class_ ='input-sm reading') }}
+        </div>
+    </div>
+    <div class = "row">
+        <div class="col-sm-3 form-group">
+          {{ form.save_button }}
+        </div>
+        <div class="col-sm-3 form-group">
+          {{ form.update_button }}
+        </div>
+        <div class="col-sm-3 form-group">
+          <input id="clear_button" name = "clear_button" type="submit" value="Clear">
+        </div>
+        <div class="col-sm-3 form-group">
+          <input id="del_button" name = "del_button" type="submit" value="Remove">
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block title1 %}
+  Entered Data. Must be uploaded
+{% endblock %}
+
+{% block table1 %}
+    <table id='treadings' style = "width:100%">
+        <thead>
+            <th>unit</th>
+            <th>line</th>
+            <th>date</th>
+            <th>time</th>
+            <th>tank</th>
+            <th>Tmp,sfc</th>
+            <th>tmp,bot</th>
+            <th>DO,sfc</th>
+            <th>DO,bot</th>
+            <th>DO%,sfc</th>
+            <th>DO%,bot</th>
+            <th>sal</th>
+        </thead>
+    <tbody style='cursor:pointer;'>
+    </tbody>
+  </table>
+{% endblock %}

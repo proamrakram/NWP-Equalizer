@@ -1,0 +1,72 @@
+﻿{% extends 'nwp/print_layout_direct.html' %}
+
+{% block title %}{{ g.page  }}{% endblock %}
+
+{% block style %} 
+{{- super() -}}
+{# insert below css for the page -#}
+<style>
+table, th, td {
+  border-bottom: 1px solid black;
+  border-collapse: collapse;
+  }
+th, td {
+  padding-left : 15px;
+  padding-right : 15px;
+}
+th {
+  background-color : #A1BAF3;
+  color : yellow;
+  
+}
+.nwpsector {
+  padding-top : 15px;
+}
+</style>
+
+{% endblock %}
+
+{% block script %} 
+{{- super() -}}
+{# insert below js for the page -#}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+<script>
+$(document).ready(function() {
+
+  sector='';
+
+})  
+
+</script>
+{% endblock %}
+
+{% block repTitle %} {{ g.description }} {% endblock %}
+{% block containers %} {# insert here the content of the page #}
+<!--<div class="line"></div>  -->
+<div class="container">
+
+  <div id="payload" class="loader nwpsector">
+    <table id='tabCtrl' style = 'background-color:white; '> 
+      <tr >
+        <th> Id </th>
+        <th> Location </th>
+        <th> fw version </th>
+        <th> Info </th>
+        <th>  Status </th>
+      </tr>
+      {% for r in controllers %}
+        <tr>
+          <td> {{ r.id }} </td>
+          <td> {{ r.Location }} </td>
+          <td> {{ r.Firmware }} </td>
+          <td> {{ r.Info }} </td>
+          <td> {{ r.Status }} </td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+  <br>
+</div>
+
+{% endblock %}

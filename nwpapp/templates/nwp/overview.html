@@ -1,0 +1,250 @@
+﻿{% extends 'nwp/layout.html' %}
+
+{% block title %}Overview{% endblock %} {# insert here the title prefix of the page #}
+
+{% block style %} 
+{{- super() -}}
+{# insert below css for the page -#}
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.11/c3.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css">
+
+<style>
+table, th, td {
+  border-bottom: 1px solid #ddd;
+  border-collapse: collapse;
+  }
+th, td {
+  padding-left : 15px;
+  padding-right : 15px;
+}
+th {
+  background-color : #A1BAF3;
+  color : yellow;
+  
+}
+div {
+  padding-bottom : 1px;
+}
+</style>
+
+{% endblock %}
+
+{% block script %} 
+{{- super() -}}
+{# insert below js for the page -#}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.11/c3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/c3_renderers.min.js"></script>
+
+<script>
+var utils = $.pivotUtilities;
+var sector_id;
+var chartRenderer = utils.c3_renderers["Bar Chart"];
+var sumOverSum =  utils.aggregators["Integer Sum"];
+var c3Options = {c3: {
+  size: {width:300, height: 280},
+  color: {
+    pattern: ['#2aa77c', '#274ea6']
+  },
+  tooltip: {
+    grouped: true // Default true
+  },
+  grid: {
+    y: {
+      lines: [{value:0}]
+    }
+  }
+}};
+$(document).ready(function() {
+
+  $.getJSON("{{ url_for('api.sectorsummbytype',path=1) }}", function(result) {
+//there is only one dict in the result
+    $.each(result, function(i,field){
+        var trow = "<tr><td>" + field.SensorType + "-" + field.SensorOption  + "</td>";
+        trow += "<td>" + field.Readings  +"</td>";
+        trow += "<td>" + field.Minr +"</td>";
+        trow += "<td>" + field.Maxr  +"</td>";
+        trow += "<td>" + field.Avgr  +"</td></tr>";
+        $('#tsector1' ).append(trow )
+    })
+  })
+  $.getJSON("{{ url_for('api.locationstatus',path=1) }}", function(result) {
+//there is only one dict in the result
+    $.each(result, function(i,field){
+        if (field.active > 0){
+          $('#tsector1_summ' ).append("<tr><td>Active Tanks </td><td>"+ field.active + "</td></tr>" );
+        }
+          if (field.under_maint > 0){
+        $('#tsector1_summ' ).append("<tr><td>Tanks Under Maint.</td><td>"+ field.under_maint + "</td></tr>");
+        }
+        if (field.under_prep > 0){
+          $('#tsector1_summ' ).append("<tr><td>Tanks Under Prep</td><td>"+ field.under_prep + "</td></tr>");
+        }
+        if (field.stopped > 0){
+          $('#tsector1_summ' ).append("<tr><td>Stopped Tanks</td><td>"+ field.stopped + "</td></tr>");
+        }
+        if (field.total > 0){
+          $('#tsector1_summ' ).append("<tr><td style='font-weight : bold'>Total Tanks</td><td style='font-weight : bold'>"+ field.total + "</td></tr>");
+        }
+        if (field.automated > 0){
+          $('#tsector1_summ' ).append("<tr><td>Automated</td><td>"+ field.automated + "</td></tr>");
+        }
+    })
+  })
+
+  $.getJSON("{{ url_for('api.sectorsummbytype',path=2) }}", function(result) {
+//there is only one dict in the result
+    $.each(result, function(i,field){
+        var trow = "<tr><td>" + field.SensorType + "-" + field.SensorOption  + "</td>";
+        trow += "<td>" + field.Readings  +"</td>";
+        trow += "<td>" + field.Minr +"</td>";
+        trow += "<td>" + field.Maxr  +"</td>";
+        trow += "<td>" + field.Avgr  +"</td></tr>";
+        $('#tsector2' ).append(trow )
+    })
+  })
+  $.getJSON("{{ url_for('api.locationstatus',path=2) }}", function(result) {
+//there is only one dict in the result
+    var $tid = $('#tsector2_summ' )
+    $.each(result, function(i,field){
+        if (field.active > 0){
+          $tid.append("<tr><td>Active Tanks </td><td>"+ field.active + "</td></tr>" );
+        }
+          if (field.under_maint > 0){
+        $tid.append("<tr><td>Tanks Under Maint.</td><td>"+ field.under_maint + "</td></tr>");
+        }
+        if (field.under_prep > 0){
+          $tid.append("<tr><td>Tanks Under Prep</td><td>"+ field.under_prep + "</td></tr>");
+        }
+        if (field.stopped > 0){
+          $tid.append("<tr><td>Stopped Tanks</td><td>"+ field.stopped + "</td></tr>");
+        }
+        if (field.total > 0){
+          $tid.append("<tr><td style='font-weight : bold'>Total Tanks</td><td style='font-weight : bold'>"+ field.total + "</td></tr>");
+        }
+        if (field.automated > 0){
+          $tid.append("<tr><td>Automated</td><td>"+ field.automated + "</td></tr>");
+        }
+    })
+  })
+
+  $.getJSON("{{ url_for('api.sectorsummbytype',path=3) }}", function(result) {
+//there is only one dict in the result
+    $.each(result, function(i,field){
+        var trow = "<tr><td>" + field.SensorType + "-" + field.SensorOption  + "</td>";
+        trow += "<td>" + field.Readings  +"</td>";
+        trow += "<td>" + field.Minr +"</td>";
+        trow += "<td>" + field.Maxr  +"</td>";
+        trow += "<td>" + field.Avgr  +"</td></tr>";
+        $('#tsamp' ).append(trow )
+    })
+  })
+  $.getJSON("{{ url_for('api.locationstatus',path=3) }}", function(result) {
+//there is only one dict in the result
+    var $tid = $('#tsamp_summ' )
+    $.each(result, function(i,field){
+        if (field.active > 0){
+          $tid.append("<tr><td>Active Tanks </td><td>"+ field.active + "</td></tr>" );
+        }
+          if (field.under_maint > 0){
+        $tid.append("<tr><td>Tanks Under Maint.</td><td>"+ field.under_maint + "</td></tr>");
+        }
+        if (field.under_prep > 0){
+          $tid.append("<tr><td>Tanks Under Prep</td><td>"+ field.under_prep + "</td></tr>");
+        }
+        if (field.stopped > 0){
+          $tid.append("<tr><td>Stopped Tanks</td><td>"+ field.stopped + "</td></tr>");
+        }
+        if (field.total > 0){
+          $tid.append("<tr><td style='font-weight : bold'>Total Tanks</td><td style='font-weight : bold'>"+ field.total + "</td></tr>");
+        }
+        if (field.automated > 0){
+          $tid.append("<tr><td>Automated</td><td>"+ field.automated + "</td></tr>");
+        }
+    })
+  })
+
+
+  $.getJSON("{{ url_for('api.sectorsummbytype',path=4) }}", function(result) {
+//there is only one dict in the result
+    $.each(result, function(i,field){
+        var trow = "<tr><td>" + field.SensorType + "-" + field.SensorOption  + "</td>";
+        trow += "<td>" + field.Readings  +"</td>";
+        trow += "<td>" + field.Minr +"</td>";
+        trow += "<td>" + field.Maxr  +"</td>";
+        trow += "<td>" + field.Avgr  +"</td></tr>";
+        $('#thatchery' ).append(trow )
+    })
+  })
+  $.getJSON("{{ url_for('api.locationstatus',path=4) }}", function(result) {
+//there is only one dict in the result
+    var $tid = $('#thatchery_summ' )
+    $.each(result, function(i,field){
+        if (field.active > 0){
+          $tid.append("<tr><td>Active Tanks </td><td>"+ field.active + "</td></tr>" );
+        }
+          if (field.under_maint > 0){
+        $tid.append("<tr><td>Tanks Under Maint.</td><td>"+ field.under_maint + "</td></tr>");
+        }
+        if (field.under_prep > 0){
+          $tid.append("<tr><td>Tanks Under Prep</td><td>"+ field.under_prep + "</td></tr>");
+        }
+        if (field.stopped > 0){
+          $tid.append("<tr><td>Stopped Tanks</td><td>"+ field.stopped + "</td></tr>");
+        }
+        if (field.total > 0){
+          $tid.append("<tr><td style='font-weight : bold'>Total Tanks</td><td style='font-weight : bold'>"+ field.total + "</td></tr>");
+        }
+        if (field.automated > 0){
+          $tid.append("<tr><td>Automated</td><td>"+ field.automated + "</td></tr>");
+        }
+    })
+  })
+
+
+});
+</script>
+{% endblock %}
+
+{% block containers %} {# insert here the content of the page #}
+<div class="container">
+<!--  <div class="row">  -->
+    {%- for item in g.nav_items %}
+      {%- if item["name"] == "Sectors" %}
+        {%- for subitem in item['submenu'] %}
+          <div class=" row">
+            <a href="{{ url_for(".".join(["parameters", subitem.lower().replace(" ","_")]))
+              }}" style="color:purple; font-size:25; font-weight:bold; text-decoration: underline;">{{ subitem.title() }}
+            </a>
+          </div>
+          <div class = "row">
+            <div id="{{ subitem.lower().replace(" ","_") }}" class="col  col-sm-7 loadr">
+              <table id="{{ 't' + subitem.lower().replace(' ','_') }}" style="width:100%">
+                <tr>
+                  <th>Type</th>
+                  <th>Readings</th>
+                  <th>Min</th>
+                  <th>Max</th>
+                  <th>Average</th>
+                </tr>
+              </table>
+            </div>
+            <div id="{{ 't' + subitem.lower().replace(" ","_") +"_summ" }}" class="col  col-sm-3 loadr"> 
+              <table style="width:100%">
+                <tr>
+                  <th>Info</th>
+                  <th>Qty</th>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+        {%- endfor %}
+      {%- endif %}
+    {%- endfor %}
+<!--  </div>  -->
+</div>
+{% endblock %}

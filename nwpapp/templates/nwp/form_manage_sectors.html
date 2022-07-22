@@ -1,0 +1,167 @@
+﻿{% extends 'nwp/form.html' %}
+
+{% block title %}{{ g.page  }}{% endblock %}
+
+{% block style %} 
+{{- super() -}}
+{# insert below css for the page -#}
+<style>
+table, th, td {
+  border-bottom: 1px solid grey;
+  border-collapse: collapse;
+  }
+th, td {
+  padding-left : 15px;
+  padding-right : 15px;
+}
+th {
+  background-color : #A1BAF3;
+  color : yellow;
+  
+}
+.nwpsector {
+  padding-bottom : 15px;
+}
+.nwpdetail {
+  padding-bottom : 25px;
+}
+</style>
+
+{% endblock %}
+
+{% block script %} 
+{{- super() -}}
+{# insert below js for the page -#}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+<script>
+function onRowClick(tableId, callback) {
+    var table = document.getElementById(tableId),
+        rows = table.getElementsByTagName("tr"),
+        i;
+    for (i = 0; i < rows.length; i++) {
+        table.rows[i].onclick = function (row) {
+            return function () {
+                callback(row);
+            };
+        }(table.rows[i]);
+    }
+};
+
+function clearbgc(){
+  $("#tsectors tbody tr").each(function(){
+    $(this).css("backgroundColor",'');
+  })
+}
+
+
+
+$(document).ready(function(){
+
+  var sbutton = document.getElementById('submit_button'); 
+  var dbutton = document.getElementById('delete_button'); 
+  dbutton.disabled=true;
+  dbutton.style.visibility="hidden";
+  var row_selected = false;
+  var key_changed = false;
+  var s_name = "";
+  var s_desc = "";
+    
+  $("#sector_name").change(function(){
+    dbutton.disabled=true;
+    dbutton.style.visibility="hidden";
+    sbutton.value = "Add";
+    key_changed = true;
+  });
+
+  $("#submit_button").click(function(event){
+    //If user clicks row and also changes sector_name, it is likely to be by mistake
+    //confirm add/update of sector info 
+    if (row_selected && key_changed){
+      var sure = false;
+      s_name = document.getElementById("sector_name").value;
+      s_desc = document.getElementById("sector_description").value;
+      sure = confirm("Adding/updating sector\n<Name> : " + s_name + ",  <Description> : " + s_desc + ".\n" + "Are You Sure?" );
+      if (!sure){
+        event.preventDefault();
+      }
+    }
+  })
+
+  onRowClick("tsectors", function (row){
+      clearbgc()
+      row.style.backgroundColor="yellow";      
+      s_name = row.getElementsByTagName("td")[1].innerHTML;
+      s_desc = row.getElementsByTagName("td")[2].innerHTML;
+      dbutton.style.visibility="visible";
+      dbutton.disabled = false;
+      sbutton.value = "Update";
+      row_selected = true;
+      document.getElementById('sector_name').value = s_name;
+      document.getElementById('sector_description').value = s_desc;
+  });
+})
+</script>
+{% endblock %}
+
+{% block containers %} {# insert here the content of the page #}
+{{ super() }}
+<div class="container">
+  <form  action = "" method = "post" novalidate="">
+    {{ form.hidden_tag() }}
+    <div class = 'row'>
+      <div class='col-sm-6'>
+        <div class = 'form-group'>
+          {{ form.sector_name.label }}
+          {{ form.sector_name(autofocus=true, style='width:50%;', value='') }}
+          {% for error in form.sector_name.errors %}
+            <span class = "flash">[{{ error }}]</span>
+          {% endfor %}
+        </div>
+        <div class = "form-group">
+          {{ form.sector_description.label }}
+          {{ form.sector_description(class_ ='input-sm', style='width:100%;') }} 
+          {% for error in form.sector_description.errors %}
+            <span class = "flash">[{{ error }}]</span>
+          {% endfor %}
+        </div>
+        <div class = "form-group>">
+          <div class = "row">
+            <div class="col-sm-6">
+              {{ form.submit_button }}
+            </div>
+            <div class="col-sm-6">
+              {{ form.delete_button }}
+            </div>
+          </div>
+        </div>
+    </div>
+    <div class = 'col-sm-6'>
+
+<!-- render sectors table   -->
+      <table id='tsectors'>
+        <th>
+          Rec ID
+        </th>
+        <th>
+          Sector
+        </th>
+        <th>
+          Description
+        </th>
+        <tbody style='cursor:pointer;'>
+          {% for x in sectors %}
+            <tr>
+              <td>{{ x['rec_id'] }}</td>
+              <td>{{ x['sector_name'] }}</td>
+              <td>{{ x['sector_desc'] }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+</div>
+
+
+{% endblock %}
+

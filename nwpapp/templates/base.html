@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+{% block head %}
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+<title>{% block title %}{% endblock %} - Aqualyzer</title>
+
+<!-- ****** stylesheets ****** -->
+<!-- Bootstrap CSS CDN -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+<!-- Our Custom CSS -->
+{%- block style %}{% endblock %}
+<!-- ****** javascripts ****** -->
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+<!-- Font Awesome JS -->
+<script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
+{%- block script %}{% endblock %}
+<!-- ****** favicons ****** -->
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
+<link rel="icon" sizes="16x16 32x32 64x64" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
+<link rel="icon" type="image/png" sizes="196x196" href="{{ url_for('static', filename='favicon/favicon-192.png') }}">
+<link rel="icon" type="image/png" sizes="160x160" href="{{ url_for('static', filename='favicon/favicon-160.png') }}">
+<link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='favicon/favicon-96.png') }}">
+<link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='favicon/favicon-64.png') }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32.png') }}">
+<link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16.png') }}">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/favicon-57.png') }}">
+<link rel="apple-touch-icon" sizes="114x114" href="{{ url_for('static', filename='favicon/favicon-114.png') }}">
+<link rel="apple-touch-icon" sizes="72x72" href="{{ url_for('static', filename='favicon/favicon-72.png') }}">
+<link rel="apple-touch-icon" sizes="144x144" href="{{ url_for('static', filename='favicon/favicon-144.png') }}">
+<link rel="apple-touch-icon" sizes="60x60" href="{{ url_for('static', filename='favicon/favicon-60.png') }}">
+<link rel="apple-touch-icon" sizes="120x120" href="{{ url_for('static', filename='favicon/favicon-120.png') }}">
+<link rel="apple-touch-icon" sizes="76x76" href="{{ url_for('static', filename='favicon/favicon-76.png') }}">
+<link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('static', filename='favicon/favicon-152.png') }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/favicon-180.png') }}">
+<meta name="msapplication-TileColor" content="#FFFFFF">
+<meta name="msapplication-TileImage" content="{{ url_for('static', filename='favicon/favicon-144.png') }}">
+<meta name="msapplication-config" content="{{ url_for('static', filename='favicon/browserconfig.xml') }}">
+
+</head>
+{% endblock %}
+<body>
+{%- block body %}{% endblock %}
+</body>
+</html>

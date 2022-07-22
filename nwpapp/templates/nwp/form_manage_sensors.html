@@ -1,0 +1,280 @@
+﻿{% extends 'nwp/form_manage.html' %}
+
+{% block title %}{{ g.page  }}{% endblock %}
+
+{% block style %} 
+{{- super() -}}
+{# insert below css for the page -#}
+
+{% endblock %}
+
+{% block script %} 
+{{- super() -}}
+{# insert below js for the page -#}
+<script>
+
+function seeksensor(s_id){
+  var out_data =[]
+  $("#tsensors").find('tr').each(function(rowindex,r){
+    var data = [];
+    $(this).find('td').each(function(colindex,c){
+      data.push(c.textContent);
+    });
+    var tval = data[0];
+    if (tval == s_id) {
+      out_data = data;
+      return false
+    }
+  })
+  return out_data;
+}
+
+function getTableData(table) {
+    var data = [];
+    table.find('tr').each(function (rowIndex, r) {
+        var cols = [];
+        $(this).find('th,td').each(function (colIndex, c) {
+            cols.push(c.textContent);
+        });
+        data.push(cols);
+    });
+    return data;
+}
+
+
+function clearbgc(){
+  $("#tsensors tbody tr").each(function(){
+    $(this).css("backgroundColor",'');
+  })
+}
+
+
+$(document).ready(function(){
+
+  var sbutton = document.getElementById('submit_button'); 
+  var dbutton = document.getElementById('delete_button'); 
+  dbutton.disabled=true;
+  dbutton.style.visibility="hidden";
+  var row_selected = false;
+  var key_changed = false;
+  var s_id = "";
+  var s_desc = "";
+  {#populate_readings(document.getElementById("s_id").value)#}
+
+  $("#s_id").blur(function(){
+    var s_id_val = document.getElementById("s_id").value
+    // var s_id_val = s_id_v.toString()
+    var sensor_data = seeksensor(s_id_val)
+    if (sensor_data.length > 0) {
+      document.getElementById("s_description").value = sensor_data[2];
+      document.getElementById("s_type").value = sensor_data[1];
+      document.getElementById('model').value = sensor_data[3];
+      document.getElementById('status').value = sensor_data[5];
+      document.getElementById('serial_no').value = sensor_data[4];
+      dbutton.disabled=false;
+      dbutton.style.visibility="visible";
+      sbutton.value = "Update";
+      key_changed = false;
+      populate_readings(s_id_val)
+    }
+    else {
+      dbutton.disabled=true;
+      dbutton.style.visibility="hidden";
+      sbutton.value = "Add";
+      key_changed = true;
+    }
+  });
+
+  $("#submit_button").click(function(event){
+    //If user clicks row and also changes sector_name, it is likely to be by mistake
+    //confirm add/update of sector info 
+    if (row_selected && key_changed){
+      var sure = false;
+      s_id = document.getElementById("s_id").value;
+      s_desc = document.getElementById("s_description").value;
+      sure = confirm("Adding/updating sensor\n<id> : " + s_id + ",  <Description> : " + s_desc + ".\n" + "Are You Sure?" );
+      if (sure){
+        document.getElementById("s_id").value = "0";
+      }
+      else {
+        event.preventDefault();
+      
+      }
+    }
+  })
+$("#bt_refresh").click(function(event){
+    //refresh readings table
+    //
+  populate_readings(document.getElementById("s_id").value)
+    event.preventDefault()
+
+  });
+
+  onRowClick("tsensors", function (row){
+      clearbgc()
+      row.style.backgroundColor="yellow";      
+      s_id = row.getElementsByTagName("td")[0].innerHTML;
+      s_type = row.getElementsByTagName("td")[1].innerHTML;
+      s_desc = row.getElementsByTagName("td")[2].innerHTML;
+      model = row.getElementsByTagName("td")[3].innerHTML;
+      serial_no = row.getElementsByTagName("td")[4].innerHTML;
+      status = row.getElementsByTagName("td")[5].innerHTML;
+      dbutton.style.visibility="visible";
+      dbutton.disabled = false;
+      sbutton.value = "Update";
+      row_selected = true;
+      document.getElementById('s_id').value = s_id;
+      document.getElementById('s_type').value = s_type;
+      document.getElementById('s_description').value = s_desc;
+      document.getElementById('status').value = status;
+      document.getElementById('model').value = model;
+      document.getElementById('serial_no').value = serial_no;
+      populate_readings(s_id)
+      // $('#treadings tbody tr').remove()
+      // $.getJSON("api/sensorreadings?sensor=" + s_id + "&limit=30", function(result) {
+      //   $.each(result, function(i,field){
+      //       var trow = "<tr><td>" + field.rec_no + "</td>";
+      //       trow += "<td>" + field.location  +"</td>";
+      //       trow += "<td>" + field.controller  +"</td>";
+      //       trow += "<td>" + field.sensor_option  +"</td>";
+      //       trow += "<td>" + field.reading +"</td>";
+      //       trow += "<td>" + field.reading_time  +"</td>";
+      //       $('#treadings' ).append(trow )
+      //   })
+      // });
+  });
+})
+
+function populate_readings(s_id){
+  $('#treadings tbody tr').remove()
+  $.getJSON("api/sensorreadings?sensor=" + s_id + "&limit=250", function(result) {
+    $.each(result, function(i,field){
+        var trow = "<tr><td>" + field.rec_no + "</td>";
+        trow += "<td>" + field.location  +"</td>";
+        trow += "<td>" + field.controller  +"</td>";
+        trow += "<td>" + field.sensor_option  +"</td>";
+        trow += "<td>" + field.reading +"</td>";
+        trow += "<td>" + field.reading_time  +"</td>";
+        $('#treadings' ).append(trow )
+    })
+  });
+
+}
+
+
+</script>
+{% endblock %}
+
+<!---
+  content blocks below
+--->
+
+{% block form %}
+  <form  action = "" method = "post" novalidate="">
+    {{ form.hidden_tag() }}
+    <div class = 'form-group'>
+      {{ form.s_id.label }}
+      {{ form.s_id(autofocus=true, style='width:50%; margin-top:10px') }}
+    </div>
+    <div class = "form-group">
+      {{ form.s_type.label }}
+      {{ form.s_type(class_ ='input-sm', style='width:50%;') }} 
+      {% for error in form.s_type.errors %}
+        <span class = "flash">[{{ error }}]</span>
+      {% endfor %}
+    </div>
+    <div class = "form-group">
+      {{ form.s_description.label }}
+      {{ form.s_description(class_ ='input-sm', style='width:95%;') }} 
+      {% for error in form.s_description.errors %}
+        <span class = "flash">[{{ error }}]</span>
+      {% endfor %}
+    </div>
+    <div class = "form-group">
+      {{ form.model.label }}
+      {{ form.model(class_ ='input-sm', style='width:50%;') }} 
+      {% for error in form.model.errors %}
+        <span class = "flash">[{{ error }}]</span>
+      {% endfor %}
+    </div>
+    <div class = "form-group">
+      {{ form.serial_no.label }}
+      {{ form.serial_no(class_ ='input-sm', style='width:95%;') }} 
+      {% for error in form.serial_no.errors %}
+        <span class = "flash">[{{ error }}]</span>
+      {% endfor %}
+    </div>
+    <div class = "form-group">
+      {{ form.status.label }}
+      {{ form.status(class_ ='input-sm', style='width:50%;') }} 
+      {% for error in form.status.errors %}
+        <span class = "flash">[{{ error }}]</span>
+      {% endfor %}
+    </div>
+    <div class = "form-group>">
+      <div class = "row">
+        <div class="col-sm-5">
+          {{ form.submit_button }}
+        </div>
+        <div class="col-sm-5">
+          {{ form.delete_button }}
+        </div>
+      </div>
+    </div>
+  </form>
+{% endblock %}
+
+{% block title2 %}
+  Readings
+{% endblock %}
+{% block refresh_button %}
+    <button class="inline" id="bt_refresh" name="bt_refresh"
+        style="width:100">
+        refresh
+    </button>
+{% endblock %}
+
+{% block table2 %}
+  <table id='treadings' style = "width:100%">
+    <thead>
+      <th>Rec</th>
+      <th>Loc</th>
+      <th>Cntrl</th>
+      <th>Opt</th>
+      <th>Value</th>
+      <th>Time</th>
+    </thead>
+    <tbody></tbody>
+  </table>
+{% endblock %}
+
+{% block title1 %}
+  Sensors
+{% endblock %}
+
+{% block table1 %}
+  <table id='tsensors' style = "width:100%">
+    <th>ID</th>
+    <th>Type</th>
+    <th>Description</th>
+    <th>Model</th>
+    <th>HW No</th>
+    <th>Status</th>
+    <th>Controller</th>
+    <th>Location</th>
+    <tbody style='cursor:pointer;'>
+      {% for x in sensors %}
+        <tr>
+          <td>{{ x['id'] }}</td>
+          <td>{{ x['s_type'] }}</td>
+          <td>{{ x['desc'] }}</td>
+          <td>{{ x['model'] }}</td>
+          <td>{{ x['hw_no'] }}</td>
+          <td>{{ x['status'] }}</td>
+          <td>{{ x['controller'] }}</td>
+          <td>{{ x['location'] }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

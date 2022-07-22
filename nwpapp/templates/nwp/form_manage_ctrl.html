@@ -1,0 +1,105 @@
+﻿{% extends 'nwp/form.html' %}
+
+{% block title %}{{ g.page  }}{% endblock %}
+
+{% block style %} 
+{{- super() -}}
+{# insert below css for the page -#}
+<style>
+table, th, td {
+  border-bottom: 1px solid grey;
+  border-collapse: collapse;
+  }
+th, td {
+  padding-left : 15px;
+  padding-right : 15px;
+}
+th {
+  background-color : #A1BAF3;
+  color : yellow;
+  
+}
+.adminform {
+  margin-top:0px;
+  padding-left: 10px;
+  background-color: #f4f7fc;
+  border: 1px solid #eaf0f9; 
+  border-style: groove;
+  border-radius:5px;
+}
+.inline {
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+.help-block {
+    color:#b6b7ba;
+    font-size:0.8em;
+}
+input:first-child {
+  margin-top: 50px;
+}
+</style>
+
+{% endblock %}
+
+{% block script %} 
+{{- super() -}}
+{# insert below js for the page -#}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+<script>
+
+function onRowClick(tableId, callback) {
+    var table = document.getElementById(tableId),
+        rows = table.getElementsByTagName("tr"),
+        i;
+    for (i = 0; i < rows.length; i++) {
+        table.rows[i].onclick = function (row) {
+            return function () {
+                callback(row);
+            };
+        }(table.rows[i]);
+    }
+};
+
+
+</script>
+{% endblock %}
+
+{% block containers %} {# insert here the content of the page #}
+{{ super() }}
+<div class="container">
+  {{ form.hidden_tag() }}
+  <div class = 'row'>
+    <div class='col-sm-6' >
+      <div class = 'adminform'>
+        <form  action = "" method = "post" novalidate="">
+          {% block form %}
+          {% endblock %}
+        </form>
+      </div>
+    </div>
+    <div class = 'col-sm-6'>
+      <h3>
+        {% block title2 %}
+        {% endblock %}
+      </h3>
+      {% block table2 %}
+      {% endblock %}
+    </div>
+  </div>
+  <div class = "line"></div>
+  <div>
+    <h3>
+    {% block title1 %}
+    {% endblock %}
+    </h3>
+    {% block table1 %}
+    {% endblock %}
+    
+  </div>
+</div>
+
+
+{% endblock %}
+

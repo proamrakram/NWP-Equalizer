@@ -1,0 +1,53 @@
+﻿{% extends 'nwp/layout_status.html' %}
+
+{% block title %}Alerts{% endblock %}
+
+{% block containers %}
+<main class="page contact-us-page">
+  <section class="clean-block clean-form dark">
+<!--    <div class="container"> -->
+    <div class="row">
+
+{% for alert in alerts_json %}
+<div class="column colcard">
+  <div class="cardStatus">
+    <a class="cardLoc{% if alert['type'] == 'offline' %} cardOffline" href="location_parameters/{{ alert['location'] }} ">{{ alert['location'] }}</a><p></p>
+      <h4>Controller is <span style="color:black"><i><b>offline</b></i></span></h4>
+      <h4>Check <span style="color:black"><i><b>Power</b></i></span> or <span style="color:black"><i><b>WiFi</b></i></span></h4>
+      <h4>Last Data {{ alert['time'] }}</h4>
+    {% endif %}{% if alert['type'] == 'oxygen' %} cardOxygen" href="location_parameters/{{ alert['location'] }} ">{{ alert['location'] }}</a><p></p>
+      <h4>{{ alert['type'] }}{% if alert['subtype'] == 'invalid' %} : <span style="color:black"><i><b>{{ alert['value'] }}</b></i></span></h4>
+      <h4>Verify <span style="color:black"><i><b>Oxygen Supply</b></i></span></h4>
+      <h4>{{ alert['time'] }}</h4>
+      {% else %}
+      <h4>Oxygen sensor is <span style="color:black"><i><b>Offline</b></i></span></h4>
+      <h4>Last Data : {{ alert['time'] }}</h4>
+    {% endif %}{% endif %}{% if alert['type'] == 'temp' %} cardTemp" href="location_parameters/{{ alert['location'] }} ">{{ alert['location'] }}</a><p></p>
+      <h4>{{ alert['type'] }}{% if alert['subtype'] == 'invalid' %} : <span style="color:black"><i><b>{{ alert['value'] }}degC</b></i></span></h4>
+      <h4><span style="color:black"><i><b></b></i></span></h4>
+      <h4>{{ alert['time'] }}</h4>
+      {% else %}
+      <h4>Temp sensor is <span style="color:black"><i><b>Offline</b></i></span></h4>
+      <h4>Last Data : {{ alert['time'] }}</h4>
+    {% endif %}{% endif %}{% if alert['type'] == 'water' %} cardWater" href="location_parameters/{{ alert['location'] }} ">{{ alert['location'] }}</a><p></p>
+      <h4>{{ alert['type'] }}{% if alert['subtype'] == 'invalid' %} : <span style="color:black"><i><b>{{ alert['value'] }}cm</b></i></span></h4>
+      <h4><span style="color:black"><i><b></b></i></span></h4>
+      <h4>{{ alert['time'] }}</h4>
+      {% else %}
+      <h4>Water sensor is <span style="color:black"><i><b>Offline</b></i></span></h4>
+      <h4>Last Data : {{ alert['time'] }}</h4>
+    {% endif %}{% endif %}{% if alert['type'] == 'salinity' %} cardSalinity" href="location_parameters/{{ alert['location'] }} ">{{ alert['location'] }}</a><p></p>
+      <h4>{{ alert['type'] }}{% if alert['subtype'] == 'invalid' %} : <span style="color:black"><i><b>{{ alert['value'] }}</b></i></span></h4>
+      <h4><span style="color:black"><i><b></b></i></span></h4>
+      <h4>{{ alert['time'] }}</h4>
+      {% else %}
+      <h4>Salinity sensor is <span style="color:black"><i><b>Offline</b></i></span></h4>
+      <h4>Last Data : {{ alert['time'] }}</h4>
+    {% endif %}{% endif %}
+  </div>
+</div>
+{% endfor %}
+    </div>
+  </section>
+</main>
+{% endblock %}

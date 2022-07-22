@@ -1,0 +1,20 @@
+﻿{% extends 'nwp/layout.html' %}
+
+{% block title %}Contact{% endblock %}
+
+{% block containers %}
+<main class="page contact-us-page">
+  <section class="clean-block clean-form dark">
+    <div class="container">
+      <div class="row">
+        <div class="col-8 ">
+          <img class="rounded" src="{{ url_for('static',filename='favicon/aqualizer.png') }}" alt='Aqualyzer' style="padding:0px; width:100%">
+          <p style="font-weight: bold; color:lightgrey; padding: 20px">
+              For any inquiries, please send an email to <span style="color: black;"> info@aqualyzer.com.sa</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

@@ -1,0 +1,382 @@
+﻿{% extends 'nwp/form_manage_ctrl.html' %}
+
+{% block title %}{{ g.page  }}{% endblock %}
+
+{% block style %} 
+{{- super() -}}
+{# insert below css for the page -#}
+
+{% endblock %}
+
+{% block script %} 
+{{- super() -}}
+{# insert below js for the page -#}
+<script>
+
+function seekcontroller(c_id){
+  var out_data =[]
+  $("#tcontrollers").find('tr').each(function(rowindex,r){
+    var data = [];
+    $(this).find('td').each(function(colindex,c){
+      data.push(c.textContent);
+    });
+    var tval = data[0];
+    if (tval == c_id) {
+      out_data = data;
+      return false
+    }
+  })
+  return out_data;
+}
+
+function getTableData(table) {
+    var data = [];
+    table.find('tr').each(function (rowIndex, r) {
+        var cols = [];
+        $(this).find('th,td').each(function (colIndex, c) {
+            cols.push(c.textContent);
+        });
+        data.push(cols);
+    });
+    return data;
+}
+function populate_sid(s_type){
+  $('#sel_s_id' ).empty().append('<option value = "0">Select sensor</option>');
+  $.getJSON("api/helpers/sensorbytype?sensortype="+ s_type , function(result) {
+    $.each(result, function(i,field){
+        $('#sel_s_id' ).append('<option value = "' + field.id + '">' + '('+field.id +')'+ '-' + field.desc + '</option>'); 
+    });
+  });
+
+}
+
+$(document).ready(function(){
+
+  var sbutton = document.getElementById('submit_button'); 
+  var dbutton = document.getElementById('delete_button'); 
+  dbutton.disabled=true;
+  dbutton.style.visibility="hidden";
+  var row_selected = false;
+  var key_changed = false;
+  var add_mode =true;
+  var c_id = "";
+  var c_desc = "";
+  var sensor_to_remove = "0";
+  $.getJSON("api/helpers/sensortypes", function(result) {
+    $('#sel_s_type' ).append('<option value = "0">Select Type</option>'); 
+    $.each(result, function(i,field){
+        $('#sel_s_type' ).append('<option value = "' + field.id + '">' + field.desc + '</option>'); 
+    });
+  });
+  $('#sel_s_id' ).append('<option value = "0">Select Sensor</option>');
+  {#populate_sensors(document.getElementById("c_id").value)#}
+
+    
+  $("#c_id").blur(function(){
+    let c_id_val = document.getElementById("c_id").value;
+    populate_form(c_id_val);
+
+  });
+
+
+function populate_form(p_c_id) {
+
+    let controller_data = seekcontroller(p_c_id);
+    if (controller_data.length > 0) {
+      document.getElementById("version").value = controller_data[1];
+      document.getElementById("date_manuf").value = controller_data[2];
+      document.getElementById('specs').value = controller_data[3];
+      document.getElementById('cstatus').value = controller_data[4];
+      document.getElementById('csector').value = controller_data[5];
+      document.getElementById('clocation').value = controller_data[6];
+      document.getElementById('fwversion').innerHTML  = "firmware : v" + controller_data[7];
+      dbutton.disabled=false;
+      dbutton.style.visibility="visible";
+      sbutton.value = "Update";
+      add_mode = false;
+      key_changed = false;
+      clearbgc_ctrl();
+      populate_sensors(p_c_id)
+    }
+    else {
+      dbutton.disabled=true;
+      dbutton.style.visibility="hidden";
+      sbutton.value = "Add";
+      add_mode = true;
+      key_changed = true;
+      clear_sensors();
+    }
+
+
+}
+
+  $("#submit_button").click(function(event){
+    //If user clicks row and also changes sector_name, it is likely to be by mistake
+    //confirm add/update of sector info 
+
+      var sure = false;
+      c_id = document.getElementById("c_id").value;
+      s_desc = document.getElementById("specs").value;
+      msg = (add_mode ? "Adding " : "Updating ");
+      msg = msg + "controller\n<id> : " + c_id + ", <Description> " + s_desc + "\n Are You Sure";
+      {#sure = confirm("Adding/updating controller\n<id> : " + c_id + ",  <Description> : " + s_desc + ".\n" + "Are You Sure?");#}
+      sure = confirm(msg);
+      if (sure){
+        if (row_selected && key_changed) {
+            document.getElementById("c_id").value = "0";
+        }
+      }
+      else {
+        event.preventDefault();
+
+      }
+  })
+
+  $("#sel_s_type").change(function(){
+    //if user selects sensor type, use value of select to retrieve sensors that are not connected to any controller.
+    //(ie Sensors with controller = 1)
+    populate_sid($(this).val())
+  })
+
+
+  $("#bt_addsensor").click(function(event){
+    //link sensor to controller
+    //
+    var c_id = document.getElementById("c_id").value;
+    if ($.trim($("#bt_addsensor").text()) == "remove"){
+      sure = confirm("Removing sensor " + sensor_to_remove + " from controller.\n" + "Are You Sure?" );
+      if (sure){
+        $.getJSON("api/removesensor?sensor=" + sensor_to_remove , function(result) {
+          populate_sensors(c_id)
+        });
+      };
+      $("#bt_addsensor").html("add");
+
+    }
+    else {
+
+      if ($("#sel_s_type").val() > "0" && $("#sel_s_id").val() > "0") {
+        var sure = false;
+        if ($.trim($("#bt_addsensor").text()) == "add"){
+          sure = confirm("Linking sensor " + $("#sel_s_id").val() + " to controller.\n" + "Are You Sure?" );
+          if (sure){
+            $.getJSON("api/linksensor/" + c_id + "?sensor=" + $("#sel_s_id").val() , function(result) {
+              populate_sensors(c_id)
+            });
+          };
+        }
+      };
+    }
+  });
+
+
+  onRowClick("tcontrollers", function (row){
+      c_id = row.getElementsByTagName("td")[0].innerHTML;
+      clearbgc_ctrl()
+      row.style.backgroundColor="yellow";      
+      version = row.getElementsByTagName("td")[1].innerHTML;
+      date_manuf = row.getElementsByTagName("td")[2].innerHTML;
+      specs = row.getElementsByTagName("td")[3].innerHTML;
+      status = row.getElementsByTagName("td")[4].innerHTML;
+      sector = row.getElementsByTagName("td")[5].innerHTML;
+      clocation = row.getElementsByTagName("td")[6].innerHTML;
+      fwversion = row.getElementsByTagName("td")[7].innerHTML;
+      dbutton.style.visibility="visible";
+      dbutton.disabled = false;
+      sbutton.value = "Update";
+      row_selected = true;
+      document.getElementById('c_id').value = c_id;
+      document.getElementById('version').value = version;
+      document.getElementById('date_manuf').value = date_manuf;
+      document.getElementById('specs').value = specs;
+      document.getElementById('cstatus').value = status;
+      document.getElementById('csector').value = sector;
+      document.getElementById('clocation').value = clocation;
+      document.getElementById('fwversion').innerHTML = "firmware : v" + fwversion;
+      populate_sensors(c_id)
+  });
+
+  // onRowClick("tsensors", function (row){
+  //     sure = confirm("Adding/updating controller, Are You Sure?" );
+  //     s_id = row.getElementsByTagName("td")[0].innerHTML;
+  //     $("#sel_s_type").val(row.getElementsByTagName("td")[1].innerHTML);
+  //     $("#sel_s_id").val(row.getElementsByTagName("td")[0].innerHTML);
+  //     $("#bt_addsensor").html("Remove");
+  // });
+
+  $("#tsensors").delegate("tr", "click", function(){
+    sensor_to_remove = "0";
+    var arrtd = $(this).find("td");
+    $("#sel_s_type").val(arrtd[1].innerHTML);
+    sensor_to_remove = arrtd[0].innerHTML;
+    $("#bt_addsensor").html("remove");
+    clearbgc();
+    $(this).css("backgroundColor","yellow");
+  })
+})
+function clearbgc(){
+  $("#tsensors tbody tr").each(function(){
+    $(this).css("backgroundColor",'');
+  })
+}
+function clearbgc_ctrl(){
+  $("#tcontrollers tbody tr").each(function(){
+    $(this).css("backgroundColor",'');
+  })
+}
+
+function populate_sensors(c_id){
+  clear_sensors();
+  $.getJSON("api/sensor_by_controller?controller=" + c_id , function(result) {
+    $.each(result, function(i,field){
+        var trow = "<tr><td>" + field.id + "</td>";
+        trow += "<td>" + field.s_type  +"</td>";
+        trow += "<td>" + field.description  +"</td>";
+        trow += "<td>" + field.model  +"</td>";
+        trow += "<td>" + field.hw_no +"</td>";
+        $('#tsensors' ).append(trow )
+    })
+    sensor_to_remove = "0";
+    $("#bt_addsensor").html("add");
+    $("#sel_s_type").val("0");
+  });
+
+}
+function clear_sensors(){
+  $('#tsensors tbody tr').remove();
+  
+}
+
+</script>
+{% endblock %}
+
+<!---
+  content blocks below
+--->
+
+{% block form %}
+<!--  <form  action = "" method = "post" novalidate="">  -->
+    {{ form.hidden_tag() }}
+    <div class = 'form-group'>
+      {{ form.c_id.label }}
+      {{ form.c_id(autofocus=true, style='width:50%; margin-top:10px') }}
+        <span class="help-block">leave blank to add new controller</span>
+    </div>
+    <div class="row">
+      <div class = "col-sm-7 form-group">
+        {{ form.version.label }}
+        {{ form.version(class_ ='input-sm', style='width:50%;') }} 
+        {% for error in form.version.errors %}
+          <span class = "flash">[{{ error }}]</span>
+        {% endfor %}
+      </div>
+      <div class="col-sm-5">
+        <p id="fwversion" style="font-size:10; color:grey;"></p>
+      </div>
+    </div>
+    <div class = "form-group">
+      {{ form.specs.label }}
+      {{ form.specs(class_ ='input-sm', style='width:95%;') }}
+        <span class="help-block">Enter IP Address and other specs</span>
+      {% for error in form.specs.errors %}
+        <span class = "flash">[{{ error }}]</span>
+      {% endfor %}
+    </div>
+    <div class = "form-group">
+      {{ form.date_manuf.label }}
+      {{ form.date_manuf(class_ ='input-sm', style='width:50%;') }} 
+      {% for error in form.date_manuf.errors %}
+        <span class = "flash">[{{ error }}]</span>
+      {% endfor %}
+    </div>
+    <div class = "form-group">
+      {{ form.cstatus.label }}
+      {{ form.cstatus(class_ ='input-sm', style='width:50%;') }} 
+      {% for error in form.cstatus.errors %}
+        <span class = "flash">[{{ error }}]</span>
+      {% endfor %}
+    </div>
+    <div class = "form-group">
+      {{ form.csector.label }}
+      {{ form.csector(class_ ='input-sm', style='width:50%;') }} 
+      {% for error in form.csector.errors %}
+        <span class = "flash">[{{ error }}]</span>
+      {% endfor %}
+    </div>
+    <div class = "form-group">
+      {{ form.clocation.label }}
+      {{ form.clocation(class_ ='input-sm', style='width:50%;') }} 
+      {% for error in form.clocation.errors %}
+        <span class = "flash">[{{ error }}]</span>
+      {% endfor %}
+    </div>
+    <div class = "form-group>">
+      <div class = "row">
+        <div class="col-sm-5">
+          {{ form.submit_button }}
+        </div>
+        <div class="col-sm-5">
+          {{ form.delete_button }}
+        </div>
+      </div>
+    </div>
+<!--  </form>  -->
+{% endblock %}
+
+{% block title2 %}
+  Connected Sensors
+{% endblock %}
+
+{% block table2 %}
+  <select class = "input-sm inline" id="sel_s_type" name = "sel_s_type" 
+    style="width:150px">
+  </select>
+  <select class = "input-sm inline" id="sel_s_id" name = "sel_s_id" 
+    style="width:150px">
+  </select>
+  <button class="inline" id="bt_addsensor" name="bt_addsensor"
+    style="width:100">
+    add
+  </button>
+  <table id='tsensors' style = "width:100%">
+    <thead>
+      <th>Id</th>
+      <th>S_Type</th>
+      <th>Descr</th>
+      <th>Model</th>
+      <th>HW No</th>
+    </thead>
+    <tbody style='cursor:pointer;'></tbody>
+  </table>
+{% endblock %}
+
+{% block title1 %}
+  Controllers
+{% endblock %}
+
+{% block table1 %}
+  <table id='tcontrollers' style = "width:100%">
+    <th>ID</th>
+    <th>Ver</th>
+    <th>Date</th>
+    <th>Specs</th>
+    <th>Status</th>
+    <th>Sector</th>
+    <th>Loc</th>
+    <th>fw version</th>
+    <tbody style='cursor:pointer;'>
+      {% for x in controllers %}
+        <tr>
+          <td>{{ x['id'] }}</td>
+          <td>{{ x['version'] }}</td>
+          <td>{{ x['date_manuf'] }}</td>
+          <td>{{ x['description'] }}</td>
+          <td>{{ x['status'] }}</td>
+          <td>{{ x['sector'] }}</td>
+          <td>{{ x['location'] }}</td>
+          <td>{{ x['fwversion'] }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block head %}
+	{{ super() }}
+	<meta http-equiv="refresh" content="60">
+{% endblock %}
+
+{% block style %} {# insert here css for all nwp's pages #}
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/nwp.css') }}">
+	<style>
+		body {
+			background-color: #EBEAE7;
+			padding-left: 20px;
+		}
+	</style>
+{% endblock %}
+
+{% block script %} {# insert here js for all nwp's pages #}
+<!-- Popper.JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#sidebarCollapse').on('click', function () {
+            $('#sidebar').toggleClass('active');
+        });
+    });
+</script>
+{% endblock %}
+
+{% block body %} {# insert here body content for nwp's pages that have no side-bar #}
+	<div class="wrapper">
+		{% include 'nwp/nav_no_sidebar.html' %}
+		<!-- Page Content  -->
+		{%- block containers %} {% endblock %}
+		</div> <!-- End Page Container  -->
+	</div> <!-- End wrapper  -->
+{%- endblock %}

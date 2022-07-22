@@ -1,0 +1,107 @@
+﻿{% extends 'nwp/print_layout.html' %}
+
+{% block title %}{{ g.page  }}{% endblock %}
+
+{% block style %} 
+{{- super() -}}
+{# insert below css for the page -#}
+<style>
+table, th, td {
+  border-bottom: 1px solid black;
+  border-collapse: collapse;
+  }
+th, td {
+  padding-left : 15px;
+  padding-right : 15px;
+}
+th {
+  background-color : #A1BAF3;
+  color : yellow;
+  
+}
+.nwpsector {
+  padding-top : 15px;
+}
+</style>
+
+{% endblock %}
+
+{% block script %} 
+{{- super() -}}
+{# insert below js for the page -#}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+<script>
+$(document).ready(function() {
+
+  sector='';
+
+})  
+
+</script>
+{% endblock %}
+
+{% block containers %} {# insert here the content of the page #}
+<!--<div class="line"></div>  -->
+<div class="container">
+  <div>
+        <p style="font-style:italic; font-size:25px; font-weight:bold">Latest Readings</td>
+  </div>
+<p>This is the way the cookie crumbled</p>
+<p>The quick brown fox jumped over the lazy dog</p>
+
+  <div id="ssumm" class="loader" style="">
+    <table id='tsectorsumm' style = 'background-color:#E9F9C1; width:70%'> 
+      <tr >
+        <th> Type </th>
+        <th> Readings </th>
+        <th> Average </th>
+        <th> Max </th>
+        <th> Min </th>
+      </tr>
+      {% for r in range(5) %}
+        <tr>
+          <td>{{ r*1000 }}</td>
+          <td>{{ r*2000 }}</td>
+          <td>{{ r*3000 }}</td>
+          <td>{{ r*4000 }}</td>
+          <td>{{ r*5000 }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+
+  <div id="output" class="loader nwpsector" style="padding-top=25px">
+    <table id='tsectordetail' style = 'width:100%'> 
+      <tr>
+        <th> Location </th>
+        <th> date </th>
+        <th> time </th>
+        <th> DO(mg) </th>
+        <th> DO(%) </th>
+        <th> Salinity </th>
+        <th> Cond. </th>
+        <th> Temp </th>
+        <th> Level </th>
+      </tr>
+
+      {% for r in range(10,20) %}
+        <tr>
+          <td><a href='location_parameters/L02T03'>{{ r*100}}</a></td>
+          <td>{{ r*200 }}</td>
+          <td>{{ r*300 }}</td>
+          <td>{{ r*400 }}</td>
+          <td>{{ r*500 }}</td>
+          <td>{{ r*600 }}</td>
+          <td>{{ r*700 }}</td>
+          <td>{{ r*800 }}</td>
+          <td>{{ r*900 }}</td>
+        </tr>
+      {% endfor %}
+
+    </table>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,58 @@
+﻿{% extends 'nwp/layout.html' %}
+
+{% block title %}{{ g.page  }}{% endblock %}
+
+{% block style %} 
+{{- super() -}}
+{# insert below css for the page -#}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">
+<style>
+table, th, td {
+  border-bottom: 1px solid black;
+  border-collapse: collapse;
+  }
+th, td {
+  padding-left : 15px;
+  padding-right : 15px;
+}
+th {
+  background-color : #A1BAF3;
+  color : yellow;
+  
+}
+.nwpsector {
+  padding-bottom : 15px;
+}
+.nwpdetail {
+  padding-bottom : 25px;
+}
+.flash {
+color:red;
+}
+</style>
+
+{% endblock %}
+
+{% block script %} 
+{{- super() -}}
+{# insert below js for the page -#}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+<script>
+
+</script>
+{% endblock %}
+
+{% block containers %} {# insert here the content of the page #}
+<!--<div class="line"></div>  -->
+<div class="container">
+    {%- for message in get_flashed_messages() %}
+        <div class="flash " >{{ message + '!!!'}}</div>
+    {%- endfor %}
+
+
+
+</div>
+
+
+{% endblock %}

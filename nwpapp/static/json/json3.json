@@ -1,0 +1,255 @@
+﻿ {
+  "chart": {
+    "caption": "Employee Joiners and Exit",
+    "subcaption": "2012-2016",
+    "xaxisname": "Years",
+    "yaxisname": "Person",
+    "formatnumberscale": "1",
+    "plottooltext": "<b>$dataValue</b> Person on <b>$seriesName</b> in $label",
+        "showvalues": "0",
+    "showsum": "1",
+    "showhovereffect": "1",
+    "theme": "fusion"
+  },
+  "categories": [
+    {
+      "category": [
+        {
+          "label": "2012",
+          
+           "link": "newchart-xml-apple"
+        },
+        {
+          "label": "2013",
+          
+           "link": "newchart-xml-apple"
+        },
+        {
+          "label": "2014",
+          
+           "link": "newchart-xml-apple"
+        },
+        {
+          "label": "2015",
+          
+           "link": "newchart-xml-apple"
+        },
+        {
+          "label": "2016",
+          
+           "link": "newchart-xml-apple"
+        }
+      ]
+    }
+  ],
+  "dataset": [
+    {
+      "seriesname": "Joiners",
+      "data": [
+        {
+          "value": "12",
+            "link": "newchart-xml-apple"
+        },
+        {
+          "value": "30",
+          
+           "link": "newchart-xml-apple"
+        },
+        {
+          "value": "48",
+          
+           "link": "newchart-xml-apple"
+        },
+        {
+          "value": "80",
+          
+           "link": "newchart-xml-apple"
+        },
+        {
+          "value": "11",
+          
+           "link": "newchart-xml-apple"
+        }
+      ]
+    },
+    {
+      "seriesname": "Exit",
+      "renderas": "line",
+      "data": [
+        {
+          "value": "70",
+          
+           "link": "newchart-xml-apple"
+        },
+        {
+          "value": "15",
+          
+           "link": "newchart-xml-apple"
+        },
+        {
+          "value": "35",
+            "link": "newchart-xml-apple"
+        },
+        {
+          "value": "60",
+          
+           "link": "newchart-xml-apple"
+        },
+        {
+          "value": "14",
+          
+           "link": "newchart-xml-apple"
+        }
+      ]
+    }
+  ],
+  
+            "linkeddata": [{
+                "id": "apple",
+                "linkedchart": {
+                    "chart": {
+                        "caption": "IN 2016",
+                        "subcaption": "This year",
+                        "xaxisname": "Months",
+                        "yaxisname": "Person",
+                       "plottooltext": "<b>$dataValue</b> Person on <b>$seriesName</b> in Month $label",
+                        "theme": "fusion",
+                        "rotateValues": "0"
+                    },
+                    "categories": [
+    {
+      "category": [
+        {
+          "label": "1",
+          
+          "link": "newchart-xml-grapes"
+        },
+        {
+          "label": "2"
+        },
+        {
+          "label": "3"
+        },
+        {
+          "label": "4"
+        },
+        {
+          "label": "5"
+        },
+          {
+          "label": "6",
+          
+          "link": "newchart-xml-grapes"
+        },
+        {
+          "label": "7"
+        },
+        {
+          "label": "8"
+        },
+        {
+          "label": "9"
+        },
+        {
+          "label": "10"
+        },
+          {
+          "label": "11",
+          
+          "link": "newchart-xml-grapes"
+        },
+        {
+          "label": "12"
+        }
+      ]
+    }
+  ],
+  "dataset": [
+    {
+      "seriesname": "Joiners",
+      "data": [
+        {
+          "value": "10"
+        },
+        {
+          "value": "11"
+        },
+        {
+          "value": "14"
+        },
+        {
+          "value": "8"
+        },
+        {
+          "value": "7"
+        },
+         {
+          "value": "9"
+        },
+        {
+          "value": "8"
+        },
+        {
+          "value": "4"
+        },
+        {
+          "value": "8"
+        },
+        {
+          "value": "11"
+        },
+        {
+          "value": "8"
+        },
+        {
+          "value": "11"
+        }
+      ]
+    },
+    {
+      "seriesname": "Exit",
+      "renderas": "line",
+      "data": [
+         {
+          "value": "15"
+        },
+        {
+          "value": "18"
+        },
+        {
+          "value": "3"
+        },
+        {
+          "value": "18"
+        },
+        {
+          "value": "4"
+        },
+         {
+          "value": "14"
+        },
+        {
+          "value": "16"
+        },
+        {
+          "value": "2"
+        },
+        {
+          "value": "2"
+        },
+        {
+          "value": "1"
+        },
+        {
+          "value": "6"
+        },
+        {
+          "value": "2"
+        }
+      ]
+    }
+  ]
+                }
+            }]
+
+}

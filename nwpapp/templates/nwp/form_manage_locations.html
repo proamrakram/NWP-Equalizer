@@ -1,0 +1,210 @@
+﻿{% extends 'nwp/form.html' %}
+
+{% block title %}{{ g.page  }}{% endblock %}
+
+{% block style %} 
+{{- super() -}}
+{# insert below css for the page -#}
+<style>
+table, th, td {
+  border-bottom: 1px solid grey;
+  border-collapse: collapse;
+  }
+th, td {
+  padding-left : 15px;
+  padding-right : 15px;
+}
+th {
+  background-color : #A1BAF3;
+  color : yellow;
+  
+}
+</style>
+
+{% endblock %}
+
+{% block script %} 
+{{- super() -}}
+{# insert below js for the page -#}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+<script>
+function onRowClick(tableId, callback) {
+    var table = document.getElementById(tableId),
+        rows = table.getElementsByTagName("tr"),
+        i;
+    for (i = 0; i < rows.length; i++) {
+        table.rows[i].onclick = function (row) {
+            return function () {
+                callback(row);
+            };
+        }(table.rows[i]);
+    }
+};
+
+function clearbgc(){
+  $("#tlocations tbody tr").each(function(){
+    $(this).css("backgroundColor",'');
+  })
+}
+
+$(document).ready(function(){
+
+  var sbutton = document.getElementById('submit_button'); 
+  var dbutton = document.getElementById('delete_button'); 
+  dbutton.disabled=true;
+  dbutton.style.visibility="hidden";
+  var row_selected = false;
+  var key_changed = false;
+  var l_id = "";
+  var l_desc = "";
+    
+  $("#location_id").change(function(){
+    dbutton.disabled=true;
+    dbutton.style.visibility="hidden";
+    sbutton.value = "Add";
+    key_changed = true;
+  });
+
+  $("#submit_button").click(function(event){
+    //If user clicks row and also changes sector_name, it is likely to be by mistake
+    //confirm add/update of sector info 
+    if (row_selected && key_changed){
+      var sure = false;
+      l_id = document.getElementById("location_id").value;
+      l_desc = document.getElementById("location_description").value;
+      sure = confirm("Adding/updating location\n<Name> : " + l_id + ",  <Description> : " + l_desc + ".\n" + "Are You Sure?" );
+      if (!sure){
+        event.preventDefault();
+      }
+    }
+  })
+
+  onRowClick("tlocations", function (row){
+      l_id = row.getElementsByTagName("td")[0].innerHTML;
+      clearbgc()
+      row.style.backgroundColor="yellow";      
+      l_desc = row.getElementsByTagName("td")[1].innerHTML;
+      status = row.getElementsByTagName("td")[2].innerHTML;
+      sector = row.getElementsByTagName("td")[3].innerHTML;
+      specs = row.getElementsByTagName("td")[4].innerHTML;
+      dbutton.style.visibility="visible";
+      dbutton.disabled = false;
+      sbutton.value = "Update";
+      row_selected = true;
+      document.getElementById('location_id').value = l_id;
+      document.getElementById('location_description').value = l_desc;
+      document.getElementById('status').value = status;
+      document.getElementById('sector').value = sector;
+      document.getElementById('specs').value = specs;
+      $('#tsensors tbody tr').remove()
+      $.getJSON("api/controller_sensors/" + l_id, function(result) {
+        $.each(result, function(i,field){
+            var trow = "<tr><td>" + field.controller + "</td>";
+            trow += "<td>" + field.sensor_type  +"</td>";
+            trow += "<td>" + field.sensor +"</td>";
+            trow += "<td>" + field.info  +"</td>";
+            trow += "<td>" + field.brand  +"</td></tr>";
+            $('#tsensors' ).append(trow )
+        })
+      });
+
+  });
+})
+</script>
+{% endblock %}
+
+{% block containers %} {# insert here the content of the page #}
+{{ super() }}
+<div class="container">
+  <form  action = "" method = "post" novalidate="">
+    {{ form.hidden_tag() }}
+    <div class = 'row'>
+      <div class='col-sm-6'>
+        <div class = 'form-group'>
+          {{ form.location_id.label }}
+          {{ form.location_id(autofocus=true, style='width:50%;', value='') }}
+          {% for error in form.location_id.errors %}
+            <span class = "flash">[{{ error }}]</span>
+          {% endfor %}
+        </div>
+        <div class = "form-group">
+          {{ form.location_description.label }}
+          {{ form.location_description(class_ ='input-sm', style='width:100%;') }} 
+          {% for error in form.location_description.errors %}
+            <span class = "flash">[{{ error }}]</span>
+          {% endfor %}
+        </div>
+        <div class = "form-group">
+          {{ form.sector.label }}
+          {{ form.sector(class_ ='input-sm', style='width:50%;') }} 
+          {% for error in form.sector.errors %}
+            <span class = "flash">[{{ error }}]</span>
+          {% endfor %}
+        </div>
+        <div class = "form-group">
+          {{ form.status.label }}
+          {{ form.status(class_ ='input-sm', style='width:50%;') }} 
+          {% for error in form.status.errors %}
+            <span class = "flash">[{{ error }}]</span>
+          {% endfor %}
+        </div>
+        <div class = "form-group">
+          {{ form.specs.label }}
+          {{ form.specs(class_ ='input-sm', style='width:100%;') }} 
+        </div>
+        <div class = "form-group>">
+          <div class = "row">
+            <div class="col-sm-6">
+              {{ form.submit_button }}
+            </div>
+            <div class="col-sm-6">
+              {{ form.delete_button }}
+            </div>
+          </div>
+        </div>
+        <div class = "line"></div>
+        <h3>Controllers, Sensors</h3>
+        <table id='tsensors' style = "width:100%">
+          <thead>
+            <th>Controller</th>
+            <th>S_Type</th>
+            <th>Sensor</th>
+            <th>HW No</th>
+            <th>Brand</th>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+
+      </div>
+      <div class = 'col-sm-6'>
+
+<!-- render sectors table   -->
+        <h3>Locations</h3>
+        <table id='tlocations' style = "width:100%">
+          <th>Rec ID</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Sector</th>
+          <th>Specs</th>
+          <tbody style='cursor:pointer;'>
+            {% for x in locations %}
+              <tr>
+                <td>{{ x['id'] }}</td>
+                <td>{{ x['desc'] }}</td>
+                <td>{{ x['status'] }}</td>
+                <td>{{ x['sector'] }}</td>
+                <td>{{ x['specs'] }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </form>
+</div>
+
+
+{% endblock %}
+

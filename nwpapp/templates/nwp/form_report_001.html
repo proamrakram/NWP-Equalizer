@@ -1,0 +1,256 @@
+﻿{% extends 'nwp/form_manage_manual.html' %}
+
+{% block title %}{{ g.page  }}{% endblock %}
+
+{% block style %} 
+{{- super() -}}
+{# insert below css for the page -#}
+
+{% endblock %}
+
+{% block script %} 
+{{- super() -}}
+{# insert below js for the page -#}
+
+<script>
+
+
+var c_id = 0;
+var line_counter = 0;
+
+
+$(document).ready(function() {
+
+    populate_location($("#location_from"), $("#sector").val());
+    populate_location($("#location_to"), $("#sector").val());
+
+    var d = new Date();
+    let date_str = d.getDate() + "-" + (d.getMonth()+1) + "-" + d.getFullYear();
+
+     $("#date_from").val(date_str);
+     $("#date_to").val(date_str);
+    // populate_hour($("#hour_from"));
+    // populate_hour($("#hour_to"));
+
+
+    // $("input.date_from").change(function(){
+    //     $("#frmmode").html("df");
+
+    // });
+
+
+
+    // $("input.date_to").change(function(){
+    //     $("#frmmode").html("dt");
+
+    // });
+
+
+    $("#sector").change(function () {
+        populate_location($("#location_from"),$("#sector").val());
+        populate_location($("#location_to"),$("#sector").val());
+    });
+
+
+
+    $("#location_from").change(function(){
+        $("#location_to").val($("#location_from").val());
+    });
+
+
+    $("#location_to").change(function(){
+        if ($("#location_to").val() < $("#location_from").val()) {
+            $("#location_to").val($("#location_from").val());
+        }
+    });
+
+    $("#date_from").blur(function(){
+        let result = valid_date(document.getElementById("date_from").value);
+        if (result.split(":")[0] == "ok") {
+            document.getElementById("date_from").value = result.split(":")[1];
+            document.getElementById("date_to").value = result.split(":")[1];
+
+        }
+        else {
+         $("#date_from").val(date_str);
+         alert(result.split(":")[1])
+        }
+
+
+    });
+
+    $("#date_to").blur(function(){
+        let result = valid_date(document.getElementById("date_to").value);
+        if (result.split(":")[0] == "ok") {
+            document.getElementById("date_to").value = result.split(":")[1];
+            if (!(date_compare(document.getElementById("date_to").value, document.getElementById("date_from").value))) {
+              document.getElementById("date_to").value = document.getElementById("date_from").value
+            }
+        }
+        else {
+         $("#date_to").val($("#date_from").val());
+         alert(result.split(":")[1])
+        }
+
+    });
+
+
+});
+
+
+function valid_date(in_date) {
+    //function returns error message as 'error:msg' if erroneous date supplied, or
+    //message 'ok:dd-mm-yyyy' if date is ok
+    // arg :  string in_date
+    let err_msg = "error: not valid date";
+    let lst_str = in_date.split("/");
+    if (lst_str.length != 3) {
+        lst_str = in_date.split("-");
+    }
+
+    if (lst_str.length != 3) {
+        lst_str = in_date.split(".");
+    }
+
+    if (lst_str.length != 3) {
+        return err_msg + ", components";
+    }
+
+    if (isNaN(lst_str[0]) || isNaN(lst_str[1]) || isNaN(lst_str[2])) {
+        return err_msg + ", not numeric";
+    }
+
+    if (lst_str[0] > 31 || lst_str[1] > 12 || lst_str[2] < 2019) {
+        return err_msg + ", values";
+    }
+
+    let in_d = new Date(lst_str[2], lst_str[1]-1, lst_str[0]);
+    // check if day is compatible with month (eg not 30/feb)
+
+    if (in_d.getMonth()+1 != Number(lst_str[1])) {
+        return err_msg + ", incompatible";
+    }
+
+    return "ok:" + in_d.getDate() + "-" + (in_d.getMonth()+1) + "-" + in_d.getFullYear()
+}
+
+
+function date_compare(hi_date,lo_date) {
+    //function compares hi_date and lo_date. 
+    //returns false if lo_date > hi_date
+    
+    let hi_str = hi_date.split("-");
+    let lo_str = lo_date.split("-");
+    let hi_d = new Date(hi_str[2], hi_str[1], hi_str[0]);
+    let lo_d = new Date(lo_str[2], lo_str[1], lo_str[0]);
+    // check if day is compatible with month (eg not 30/feb)
+
+    return (lo_date <= hi_date);
+
+}
+
+
+function get_sector(loc) {
+    //api SectorOfLocation returns sector of supplied location arg
+    out_sector = "1";
+    $.getJSON("api/helpers/SectorOfLocation?location=" + loc, function(result){
+        $.each(result, function(i, field) {
+            out_sector = field.sector;
+        })
+    })
+    return out_sector
+}
+
+function populate_location(loc_field, sector){
+  loc = '#' + loc_field;
+  loc_field.empty();
+  $.getJSON("api/helpers/locations?sector="+ sector , function(result) {
+    $.each(result, function(i,field){
+        loc_field.append('<option value = "' + field.id + '">' + '('+field.id +')'+ '-' + field.desc + '</option>');
+    });
+  });
+}
+
+
+
+
+</script>
+{% endblock %}
+
+<!---
+  content blocks below
+--->
+
+{% block form %}
+<!--  <form  action = "" method = "post" novalidate="">  -->
+    {{ form.hidden_tag() }}
+    <div>
+        <div class="row">
+          <div class = "col-sm-6 form-group">
+            {{ form.sector.label }}
+            {{ form.sector(class_ ='input-sm', style='margin-top:10px') }}
+            {% for error in form.sector.errors %}
+              <span class = "flash">[{{ error }}]</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="row">
+            <div class = "col-sm-6 form-group">
+              {{ form.location_from.label }}
+              {{ form.location_from(class_ ='input-sm', style="") }}
+              {% for error in form.location_from.errors %}
+                <span class = "flash">[{{ error }}]</span>
+              {% endfor %}
+            </div>
+
+            <div class = "col-sm-6 form-group">
+              {{ form.location_to.label }}
+              {{ form.location_to(class_ ='input-sm') }}
+              {% for error in form.location_to.errors %}
+                <span class = "flash">[{{ error }}]</span>
+              {% endfor %}
+            </div>
+        </div>
+        <div class="row">
+            <div class = "col-sm-6 form-group">
+              {{ form.date_from.label }}
+              {{ form.date_from(class ='input-sm', style='') }}
+              {% for error in form.date_from.errors %}
+                <span class = "flash">[{{ error }}]</span>
+              {% endfor %}
+            </div>
+            <div class = "col-sm-6 form-group">
+              {{ form.date_to.label }}
+              {{ form.date_to(class ='input-sm', style='width:50%;') }}
+              {% for error in form.date_to.errors %}
+                <span class = "flash">[{{ error }}]</span>
+              {% endfor %}
+            </div>
+        </div>
+        <div class="row">
+            <div class = "col-sm-6 form-group">
+              {{ form.data_option.label }}<span> . . . </span>
+
+              {% for subfield in form.data_option %}
+                <tr>
+                    <td>{{ subfield }} </td>
+                    <td>{{ subfield.label }}</td>
+                </tr>
+              {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class = "row">
+        <div class="col-sm-3 form-group">
+          {{ form.submit_button }}
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block title1 %}
+{% endblock %}
+
+{% block table1 %}
+{% endblock %}

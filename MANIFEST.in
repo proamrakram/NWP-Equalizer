@@ -1,0 +1,3 @@
+graft nwpapp/static
+graft nwpapp/templates
+global-exclude *.pyc

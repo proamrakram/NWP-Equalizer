@@ -1,0 +1,182 @@
+@import "https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,600,700";
+
+html {
+  background: #eee;
+  font-family: "Ubuntu", sans-serif;
+  padding: 1rem;
+}
+body {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px 0 rgba(54, 54, 65, 0.3);
+  margin: 0 auto;
+  max-width: 960px;
+}
+h1 {
+  color: #274ea6;
+  font-family: "Ubuntu", sans-serif;
+  margin: 1rem 0;
+}
+a {
+  color: #274ea6;
+}
+hr {
+  border: none;
+  border-top: 1px solid lightgray;
+}
+nav {
+  -ms-flex-align: center;
+  align-items: center;
+  background: linear-gradient(
+      140deg,
+      #3eb99b,
+      #37ab83 40%,
+      #297a73 70%,
+      #0000 70%
+    ),
+    linear-gradient(to right, #226456, #3ab983 50%, #86d4a6) 100% 0,
+    linear-gradient(40deg, #51aee5 20%, #60caf4 30%, #274ea6 70%, #0000 70%) 0
+      100%,
+    linear-gradient(140deg, #293f99 13%, #55c4f2 71%, #51aee5 90%) 100% 100%;
+  background-repeat: no-repeat;
+  background-size: 100% 50%, 40% 50%, 100% 50%, 40% 50%;
+  border: 5px solid #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px 0 rgba(54, 54, 65, 0.4);
+  display: -ms-flexbox;
+  display: flex;
+  padding: 0 0.5rem;
+}
+nav h1 {
+  color: #fff;
+  -ms-flex: auto;
+  flex: auto;
+  margin: 1rem;
+  text-align: center;
+  text-shadow: 0.06em 0.06em #2a419b;
+}
+nav h1 a {
+  padding: 0.25rem 0.5rem;
+  text-decoration: none;
+}
+nav ul {
+  display: -ms-flexbox;
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+nav ul li a,
+nav ul li span,
+header .action {
+  color: #fff;
+  display: block;
+  padding: 0.5rem;
+  text-shadow: 0.06em 0.06em #2a419b;
+}
+.content {
+  padding: 0 1rem 1rem;
+}
+.content > header {
+  -ms-flex-align: end;
+  align-items: flex-end;
+  border-bottom: 1px solid lightgray;
+  display: -ms-flexbox;
+  display: flex;
+}
+.content > header h1 {
+  -ms-flex: auto;
+  flex: auto;
+  margin: 1rem 0 0.25rem 0;
+}
+.flash {
+  background: #cae6f6;
+  border: 1px solid #377ba8;
+  margin: 1em 0;
+  padding: 1em;
+}
+.post > header {
+  -ms-flex-align: end;
+  align-items: flex-end;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 0.85em;
+}
+.post > header > div:first-of-type {
+  -ms-flex: auto;
+  flex: auto;
+}
+.post > header h1 {
+  font-size: 1.5em;
+  margin-bottom: 0;
+}
+.post .about {
+  color: slategray;
+  font-style: italic;
+}
+.post .body {
+  white-space: pre-line;
+}
+.content:last-child {
+  margin-bottom: 0;
+}
+.content form {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  margin: 1em 0;
+}
+.content label {
+  color: #2aa77c;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+.content input,
+.content textarea {
+  margin-bottom: 1em;
+}
+.content textarea {
+  min-height: 12em;
+  resize: vertical;
+}
+input.danger {
+  color: #cc2f2e;
+}
+input[type="submit"] {
+  -ms-flex-item-align: start;
+  align-self: start;
+  color: #fff;
+  cursor: pointer;
+  background-size: 300% 100%;
+  background-image: linear-gradient(
+    to right,
+    #86d4a6,
+    #297a73,
+    #60caf4,
+    #274ea6
+  );
+  border: 2px solid #fff;
+  border-radius: 40px;
+  box-shadow: 0 4px 15px 0 rgba(45, 196, 190, 0.55);
+  font-size: 16px;
+  font-weight: 600;
+  height: 40px;
+  margin: 20px;
+  text-shadow: 0.06em 0.06em #2a419b;
+  moz-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+  width: 200px;
+}
+input[type="submit"]:hover {
+  background-position: 100% 0;
+  moz-transition: all 0.4s ease-in-out;
+  transition: all 0.4s ease-in-out;
+}
+input[type="submit"]:active {
+  background-position: 100% 0;
+  box-shadow: 0 0 0 0 rgba(45, 196, 190, 0.75);
+  text-shadow: 0 0 #2a419b;
+  moz-transition: all 0.1s ease-in-out;
+  transition: all 0.1s ease-in-out;
+}

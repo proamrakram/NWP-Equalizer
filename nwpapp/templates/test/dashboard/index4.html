@@ -1,0 +1,133 @@
+﻿{% extends 'dashboard/layout.html' %}
+
+{% block title %}KPI{% endblock %} {# insert here the title prefix of the page #}
+
+{% block containers %} {# insert here the content of the page #}
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div id="chart-containerE"></div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div id="chart-containerE1"></div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div id="chart-containerE2"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div id="chart-containerE3"></div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div id="chart-containerE4"></div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div id="chart-containerE5"></div>
+                    </div>
+                </div>
+            </div>
+
+
+            <script>
+         
+                FusionCharts.ready(function () {
+                    var satisfactionChart = new FusionCharts({
+                        type: 'mscolumnline3d',
+                        renderAt: 'chart-containerE',
+                        width: '100%',
+                        height: '280',
+                        dataFormat: 'jsonurl',
+                        dataSource: '/static/json/json3.json',
+                    });
+
+                    satisfactionChart.render();
+
+                });
+            </script>
+
+            <script>
+
+                FusionCharts.ready(function () {
+                    var satisfactionChart = new FusionCharts({
+                        type: 'mscolumnline3d',
+                        renderAt: 'chart-containerE1',
+                        width: '100%',
+                        height: '280',
+                        dataFormat: 'jsonurl',
+                        dataSource: '/static/json/json3.json',
+                    });
+
+                    satisfactionChart.render();
+
+                });
+            </script>
+
+            <script>
+
+                FusionCharts.ready(function () {
+                    var satisfactionChart = new FusionCharts({
+                        type: 'mscolumnline3d',
+                        renderAt: 'chart-containerE2',
+                        width: '100%',
+                        height: '280',
+                        dataFormat: 'jsonurl',
+                        dataSource: '/static/json/json3.json',
+                    });
+
+                    satisfactionChart.render();
+
+                });
+            </script>
+
+            <script>
+
+                FusionCharts.ready(function () {
+                    var satisfactionChart = new FusionCharts({
+                        type: 'mscolumnline3d',
+                        renderAt: 'chart-containerE3',
+                        width: '100%',
+                        height: '280',
+                        dataFormat: 'jsonurl',
+                        dataSource: '/static/json/json3.json',
+                    });
+
+                    satisfactionChart.render();
+
+                });
+            </script>
+
+            <script>
+
+                FusionCharts.ready(function () {
+                    var satisfactionChart = new FusionCharts({
+                        type: 'mscolumnline3d',
+                        renderAt: 'chart-containerE4',
+                        width: '100%',
+                        height: '280',
+                        dataFormat: 'jsonurl',
+                        dataSource: '/static/json/json3.json',
+                    });
+
+                    satisfactionChart.render();
+
+                });
+            </script>
+
+            <script>
+
+                FusionCharts.ready(function () {
+                    var satisfactionChart = new FusionCharts({
+                        type: 'mscolumnline3d',
+                        renderAt: 'chart-containerE5',
+                        width: '100%',
+                        height: '280',
+                        dataFormat: 'jsonurl',
+                        dataSource: '/static/json/json3.json',
+                    });
+
+                    satisfactionChart.render();
+
+                });
+            </script>
+{% endblock %}

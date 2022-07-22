@@ -1,0 +1,28 @@
+
+{% extends 'nwp/layout.html' %}
+
+{% block title %}About{% endblock %}
+
+{% block containers %}
+<main class="page project-page">
+  <section class="portfolio-block project" style="padding-bottom:11px;padding-top:15px;">
+    <div class="container" style="padding:2px;margin:0px;">
+      <div class="row" style="margin:-15px;">
+        <div class="col-12 col-md-6 offset-sm-1 offset-md-1 info" style="padding:0px;">
+{#          <h3 style="margin-bottom:3px;padding-left:5px;">Welcome</h3>#}
+          <img class="rounded" src="{{ url_for('static',filename='favicon/aqualizer.png') }}" alt='Aqualyzer' style="padding:0px; width:100%">
+          <p style="padding:10px;">
+            With numerous containers, ponds, and tanks used in different stages of a typical aquaculture production cycle, water parameter data collection
+            and analysis forms an integral part of water management to protect the stock, ensure optimal growth, and detect
+              and prevent virus spread.
+
+          </p>
+          <p style="padding:10px;">
+              This application receives data from sensors of different types, attached to specially designed controllers with features that allow timely reaction to critical parameter levels.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

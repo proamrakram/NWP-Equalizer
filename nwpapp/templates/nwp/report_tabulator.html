@@ -1,0 +1,232 @@
+﻿{% extends 'nwp/print_layout.html' %}
+
+{% block title %}{{ g.page  }}{% endblock %}
+
+{% block style %} 
+{{- super() -}}
+{# insert below css for the page -#}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.1.5/css/tabulator.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.1.5/css/tabulator.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.1.5/css/tabulator_simple.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.1.5/css/tabulator_site.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.1.5/css/semantic-ui/tabulator_semantic-ui.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.1.5/css/bootstrap/tabulator_bootstrap.min.css" rel="stylesheet">
+
+<style>
+
+table, th, td {
+  border-bottom: 1px solid black;
+  border-collapse: collapse;
+  }
+th, td {
+  padding-left : 15px;
+  padding-right : 15px;
+}
+th {
+  background-color : #A1BAF3;
+  color : yellow;
+  
+}
+.nwpsector {
+  padding-top : 15px;
+}
+</style>
+
+{% endblock %}
+
+{% block script %} 
+{{- super() -}}
+{# insert below js for the page -#}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.4/fetch.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.1.4/dist/js/tabulator.min.js"></script>
+<script type="text/javascript" src="http://oss.sheetjs.com/js-xlsx/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.5/jspdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/2.3.2/jspdf.plugin.autotable.js"></script>
+
+
+<script>
+$(document).ready(function() {
+  $.getJSON('{{ g.json_url }}', function(mps) {
+    myTableFunction(mps,"{{ g.report }}");
+  })
+});
+
+
+function report_title(report_desc) {
+
+    let title = report_desc;
+    if ('{{ selection[0] }}' == '{{ selection[1] }}') {
+        title += '. Tank: {{ selection[0] }}; ';
+    }
+    else {
+        title += '. Tanks: {{ selection[0] }} to {{ selection[1] }} ; ';
+    }
+    if ('{{ selection[2] }}' == '{{ selection[3] }}') {
+        title += 'Date: {{ selection[2] }}; '
+    }
+    else {
+        title += 'from {{ selection[2] }} to {{ selection[3] }} ; ';
+    }
+    if (['001','002'].includes('{{ g.report_id }}')) {
+        if ('{{ selection[4] }}' == 'both') {
+            title += 'manual,auto';
+        }
+        else {
+            title += '{{ selection[4] }} readings only';
+        }
+    }
+
+    return title;
+}
+
+function myTableFunction(datatable, report) {
+
+    //trigger download of data.xlsx file
+
+    $("#download-xlsx").click(function () {
+        table.download("xlsx", "NWP " + report + ".xlsx", { sheetName: "NWP " + report + "" });
+    });
+
+    //trigger download of data.pdf file
+    $("#download-pdf").click(function () {
+        title = report_title(report);
+
+        table.download("pdf", "NWP " + report + ".pdf", {
+            orientation: "landscape", //set page orientation to portrait
+            title: title, //add title to report
+        });
+    });
+
+
+
+    var minMaxFilterEditor = function (cell, onRendered, success, cancel, editorParams) {
+
+        var end;
+
+        var container = document.createElement("span");
+
+        //create and style inputs
+        var start = document.createElement("input");
+        start.setAttribute("type", "number");
+        start.setAttribute("placeholder", "Min");
+        start.setAttribute("min", 0);
+        start.setAttribute("max", 100);
+        start.style.padding = "4px";
+        start.style.width = "50%";
+        start.style.boxSizing = "border-box";
+
+        start.value = cell.getValue();
+
+        function buildValues() {
+            success({
+                start: start.value,
+                end: end.value,
+            });
+        }
+
+        function keypress(e) {
+            if (e.keyCode == 13) {
+                buildValues();
+            }
+
+            if (e.keyCode == 27) {
+                cancel();
+            }
+        }
+
+        end = start.cloneNode();
+
+        start.addEventListener("change", buildValues);
+        start.addEventListener("blur", buildValues);
+        start.addEventListener("keydown", keypress);
+
+        end.addEventListener("change", buildValues);
+        end.addEventListener("blur", buildValues);
+        end.addEventListener("keydown", keypress);
+
+
+        container.appendChild(start);
+        container.appendChild(end);
+
+        return container;
+    }
+
+    //custom max min filter function
+    function minMaxFilterFunction(headerValue, rowValue, rowData, filterParams) {
+        //headerValue - the value of the header filter element
+        //rowValue - the value of the column in this row
+        //rowData - the data for the row being filtered
+        //filterParams - params object passed to the headerFilterFuncParams property
+
+        if (rowValue) {
+            if (headerValue.start != "") {
+                if (headerValue.end != "") {
+                    return rowValue >= headerValue.start && rowValue <= headerValue.end;
+                } else {
+                    return rowValue >= headerValue.start;
+                }
+            } else {
+                if (headerValue.end != "") {
+                    return rowValue <= headerValue.end;
+                }
+            }
+        }
+
+        return false; //must return a boolean, true if it passes the filter.
+    }
+
+
+
+    var table = new Tabulator("#example-table", {
+        height: "611px",
+        width: 600,
+        layout: "fitColumns",
+        data: datatable.data,
+        columns: datatable.table,
+    })
+}
+
+function refreshPage(){
+  $.getJSON("{{ g.json_url }}", function(mps) {
+    myTableFunction(mps,"{{ g.report }}");
+  })
+}
+
+
+</script>
+{% endblock %}
+
+{% block containers %} {# insert here the content of the page #}
+<div class="container">
+    <div id="accordion" style="width:100%">
+        <div class="card">
+            <div class="card-header" id="headingTwo">
+                <h5 class="mb-0">
+                    <button class="btn btn-link"  onclick="refreshPage()">
+                       Refresh
+                    </button>
+                </h5>
+            </div>
+            <div id="collapseTwo" aria-labelledby="headingTwo" >
+                <div class="card-body">
+                    <div class = "row" >
+                        <div class="col-sm-9"><kbd style="font-size:14PX">Title: {{ g.report }}</kbd></div>
+                        <div class="btn-group col-sm-3 float-right" role="group" aria-label="Basic example">
+                            <button type="button" class="btn btn-secondary" id="download-xlsx">Export: Excel</button>
+                            <button type="button" class="btn btn-secondary" id="download-pdf">PDF</button>
+                        </div>
+                    </div>
+                    <div class="example-table loader" id="example-table"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

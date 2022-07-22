@@ -1,0 +1,130 @@
+﻿{% extends 'nwp/layout.html' %}
+
+{% block title %}{{ g.page  }}{% endblock %}
+
+{% block style %} 
+{{- super() -}}
+{# insert below css for the page -#}
+<style>
+table, th, td {
+  border-bottom: 1px solid black;
+  border-collapse: collapse;
+  }
+th, td {
+  padding-left : 15px;
+  padding-right : 15px;
+}
+th {
+  background-color : #A1BAF3;
+  color : yellow;
+  
+}
+.nwpsector {
+  padding-top : 15px;
+}
+</style>
+
+{% endblock %}
+
+{% block script %} 
+{{- super() -}}
+{# insert below js for the page -#}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+<script>
+$(document).ready(function() {
+
+  sector='';
+  $.getJSON("{{ g.json_url }}", function(result) {
+
+      $.each(result, function(i,field){
+        sector = field.Sector;
+        var locurl="location_parameters/" + field.Location ;
+        var trow = "<tr><td><a href='" + locurl + "' >" + field.Location +"</a></td>";
+//        var d = field.Day; 
+  //      trow += "<td>" + d.getDate + "/"+ d.getMonth + "/" + d.getFullYear  +"</td>";
+//        if (!(d == null)) {d = (d.slice(5)).slice(0,11)};
+        trow += "<td>" + field.Day  +"</td>";
+        trow += "<td>" + field.Time  +"</td>";
+        trow += "<td>" + field.DOmg  +"</td>";
+        trow += "<td>" + field.DOPS  +"</td>";
+        trow += "<td>" + field.Salinity  +"</td>";
+        trow += "<td>" + field.Conductivity  +"</td>";
+        trow += "<td>" + field.Temp  +"</td>";
+        trow += "<td>" + field.WaterLevel  +"</td></tr";
+
+        $('#tsectordetail').append(trow);
+      })
+  })
+
+  $.getJSON("{{ url_for('api.sectorsummbytype',path=g.sector) }}", function(result) {
+//there is only one dict in the result
+    $.each(result, function(i,field){
+        var trow = "<tr><td>" + field.SensorType + "-" + field.SensorOption  + "</td>";
+        trow += "<td>" + field.Readings  +"</td>";
+        trow += "<td>" + field.Minr +"</td>";
+        trow += "<td>" + field.Maxr  +"</td>";
+        trow += "<td>" + field.Avgr  +"</td></tr>";
+        $('#tsectorsumm' ).append(trow )
+    })
+  })
+
+
+//   $.getJSON("{{ url_for('api.locsummbytype',path=g.location) }}", function(result) {
+// //there is only one dict in the result
+//     $.each(result, function(i,field){
+//         var trow = "<tr><td>" + field.SensorType + "-" + field.SensorOption  + "</td>";
+//         trow += "<td>" + field.Readings  +"</td>";
+//         trow += "<td>" + field.Avgr +"</td>";
+//         trow += "<td>" + field.Maxr  +"</td>";
+//         trow += "<td>" + field.Minr  +"</td></tr>";
+//         $('#tsectorsumm').append(trow);
+//     })
+//   })
+
+
+})  
+
+</script>
+{% endblock %}
+
+{% block containers %} {# insert here the content of the page #}
+<!--<div class="line"></div>  -->
+<div class="container">
+  <div>
+        <p style="font-style:italic; font-size:25px; font-weight:bold">Latest Readings</td>
+  </div>
+
+  <div id="ssumm" class="loader" style="">
+    <table id='tsectorsumm' style = 'background-color:#E9F9C1; width:70%'> 
+      <tr >
+        <th> Type </th>
+        <th> Readings </th>
+        <th> Min </th>
+        <th> Max </th>
+        <th> Average </th>
+      </tr>
+
+    </table>
+  </div>
+
+
+  <div id="output" class="loader nwpsector" style="padding-top=25px">
+    <table id='tsectordetail' style = 'width:100%'> 
+      <tr>
+        <th> Location </th>
+        <th> date </th>
+        <th> time </th>
+        <th> DO(mg) </th>
+        <th> DO(%) </th>
+        <th> Salinity </th>
+        <th> Cond. </th>
+        <th> Temp </th>
+        <th> Level </th>
+      </tr>
+    </table>
+  </div>
+</div>
+
+
+{% endblock %}
